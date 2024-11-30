@@ -6,10 +6,14 @@ import os
 from nltk.corpus import stopwords
 import hashlib
 from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+
+lemmatizer = WordNetLemmatizer()
 
 # Download necessary NLTK data
 nltk.download('stopwords')
 nltk.download('punkt')
+nltk.download('wordnet')
 
 # Loading the CSV file, im using the practice_dataset which I made for testing. Also I have used the title column for processing the text
 data_file = pd.read_csv('practice_dataset.csv')
@@ -23,9 +27,17 @@ stop_words = set(stopwords.words('english'))
 # Define the preprocessing function
 def preprocess_text(text):
     text = text.lower()  # Converting the text to lowercase
-    text = re.sub(r'[^\w\s]', '', text)  # Remove special characters and punctuation using regular expressions
+    text = re.sub(r'[^\w\s]', '', text) 
+    text = re.sub(r'\s+', ' ', text) 
+    text = text.strip() 
+     # Handle non-ASCII characters
+    text = text.encode('ascii', 'ignore').decode('ascii')  # Remove non-ASCII characters
+    
     word_tokens = word_tokenize(text)  # Tokenize the cleaned text into individual words.
-    filtered_tokens = [word for word in word_tokens if word not in stop_words]  # Remove stop words to keep only important words.
+    filtered_tokens = [
+        lemmatizer.lemmatize(word)  # Lemmatize each word
+        for word in word_tokens if word not in stop_words  # Remove stop words
+    ]
     return filtered_tokens
 
 # Apply preprocessing to the 'text' column
@@ -37,8 +49,7 @@ def generate_word_id(word):
 
 lexicon ={} #storing as dictionary
 for index, row in data_file.iterrows():
-    text = row['text']  # Adjust the column name based on your dataset
-    words = text.lower().split()  # Simple tokenization (better to use nltk's tokenizer)
+    words = row['processed_text']
 
 
 for word in words:
