@@ -15,6 +15,7 @@ except LookupError:
 # tags words in text based off part-of-speech
 def tag_text(text):
     text = text.lower()
+    text = text.encode('ascii', 'ignore').decode('ascii')   # removing non-ascii characters
     try:
         tokens = word_tokenize(text)
         tokens = [word for word in tokens if word not in string.punctuation]    # remove punctuation
@@ -23,8 +24,8 @@ def tag_text(text):
         print("Missing nltk resources, consider running nltk_download.py")
 
 def process_word(word, tag):
-    # return an empty string if the word is a stop word
-    if word in stop_words:
+    # return an empty string if the word is a stop word or a letter
+    if word in stop_words or len(word) == 1:
         return ''
     
     # lemmatizing based off of tag
