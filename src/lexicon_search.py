@@ -21,4 +21,4 @@ def search_word(word):
         print(f"The word '{word}' does not exist in the lexicon.")
         return None
 
-search_word('military')  
+search_word('ass')  
