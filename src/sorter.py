@@ -7,15 +7,15 @@ with open('forward.json', 'r') as data:
 
 inverted = {}
 
-for docID in forward:
-    # thisIndex is all the words in the current document with their hitlists
-    thisIndex = forward[docID]
-    for wordID in thisIndex:
-        if wordID not in inverted:
-            # initialize a dict for this wordID
-            inverted[wordID] = {}
-        # append this docID : hitlist to this word's entry
-        inverted[wordID][docID] = thisIndex[wordID]
+for doc_id in forward:
+    # this_index is all the words in the current document with their hitlists
+    this_index = forward[doc_id]
+    for word_id in this_index:
+        if word_id not in inverted:
+            # initialize a dict for this word_id
+            inverted[word_id] = {}
+        # append this doc_id : hitlist to this word's entry
+        inverted[word_id][doc_id] = this_index[word_id]
 
 with open('inverted.json', 'w') as output:
     json.dump(inverted, output)
