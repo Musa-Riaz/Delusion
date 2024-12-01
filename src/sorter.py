@@ -9,8 +9,10 @@ with open(forward_index_file, 'r') as file:
     forward = json.load(file)
 
 inverted = {}
+sorted = 0
 
 for doc_id in forward:
+    sorted += 1
     # this_index is all the words in the current document with their hitlists
     this_index = forward[doc_id]
     for word_id in this_index:
@@ -22,3 +24,5 @@ for doc_id in forward:
 
 with open(inverted_index_file, 'w') as file:
     json.dump(inverted, file)
+
+print(f"Sorted {sorted} documents.")

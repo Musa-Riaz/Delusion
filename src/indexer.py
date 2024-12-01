@@ -63,6 +63,7 @@ indexed_urls = load_indexed_urls(indexed_urls_file)
 new_urls = set()
 forward_index = load_forward_index(forward_index_file)
 
+indexed = 0
 file = open(dataset_file, encoding='utf-8')
 dataset = csv.reader(file)
 next(dataset)    # skip headings row
@@ -74,9 +75,12 @@ for article in dataset:
     # extract hash from url to check if the article has already been indexed
     this_hash = re.search(r'[^-]+$', article[URL]).group()
     if this_hash in indexed_urls or this_hash in new_urls:
+        print(f"{this_hash} already indexed.")
         continue
 
     new_urls.add(this_hash)
+    print(f"Indexing {this_hash}...")
+    indexed += 1
 
     this_entry = {}
     for section in [TITLE, TEXT, URL, AUTHORS, TAGS]:
@@ -134,3 +138,5 @@ except IOError:
     file.write('\n'.join(new_urls) + '\n')
 finally:
     file.close()
+
+print(f"\nDone! Indexed {indexed} new documents.")
