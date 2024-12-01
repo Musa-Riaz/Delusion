@@ -2,8 +2,8 @@
 # initial version, assumes no barrels are implemented, not intended to function efficiently for the entire forward index without barrel divisions
 import json
 
-forward_index_file = 'forward_index.json'
-inverted_index_file = 'inverted_index.json'
+forward_index_file = 'indexes/forward_index.json'
+inverted_index_file = 'indexes/inverted_index.json'
 
 with open(forward_index_file, 'r') as file:
     forward = json.load(file)

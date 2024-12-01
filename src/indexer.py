@@ -45,7 +45,9 @@ def get_tagged_text(text, section):
     elif section == URL:
         # extracting relevant text from URL using regex
         match = re.search(r"medium\.com\/(.+)-(.+)$", text)  # get remaining text after 'medium.com'
-        return wp.tag_text(' '.join(re.split(r'[/-]', match.group(1))))  # split the text on / or - and join with spaces
+        if match:
+            return wp.tag_text(' '.join(re.split(r'[/-]', match.group(1))))  # split the text on / or - and join with spaces
+        return wp.tag_text('')
 
 
 dataset_file = 'practice_dataset.csv'
@@ -66,6 +68,10 @@ dataset = csv.reader(file)
 next(dataset)    # skip headings row
 
 for article in dataset:
+    # to avoid empty rows
+    if len(article) < 5:
+        continue
+    # extract hash from url to check if the article has already been indexed
     this_hash = re.search(r'[^-]+$', article[URL]).group()
     if this_hash in indexed_urls or this_hash in new_urls:
         continue
@@ -93,12 +99,12 @@ for article in dataset:
                 this_word_id = lexicon[this_word]
 
             # initialize new hitlist if first occurence
-            if this_word not in this_entry:
-                this_entry[this_word] = []
+            if this_word_id not in this_entry:
+                this_entry[this_word_id] = []
 
             # pos * 10 + section is hit representation
             # first 4 digits show position, last digit shows section
-            this_entry[this_word].append(pos * 10 + section)
+            this_entry[this_word_id].append(pos * 10 + section)
             
             # cap position at 9999
             if pos < 9999:
@@ -122,9 +128,9 @@ with open(ids_file, 'w') as file:
 # add new indexed url hashes to file
 try:
     file = open(indexed_urls_file, 'a')
-    file.write('\n'.join(new_urls))
+    file.write('\n'.join(new_urls) + '\n')
 except IOError:
     file = open(indexed_urls_file, 'w')
-    file.write('\n'.join(new_urls))
+    file.write('\n'.join(new_urls) + '\n')
 finally:
     file.close()
