@@ -2,12 +2,18 @@ import word_processing as wp
 import csv
 import json
 import regex as re
+import os
 
 TITLE = 0
 TEXT = 1
 URL = 2
 AUTHORS = 3
 TAGS = 5
+
+try:
+    os.mkdir('indexes')
+except FileExistsError:
+    pass
 
 def load_ids(ids_file):
     try:
