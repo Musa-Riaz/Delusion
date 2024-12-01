@@ -4,6 +4,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk import pos_tag
 import string
+import regex as re
 
 lemmatizer = WordNetLemmatizer()
 # set of common words not considered by the search engine
@@ -18,8 +19,15 @@ def tag_text(text):
     text = text.encode('ascii', 'ignore').decode('ascii')   # removing non-ascii characters
     try:
         tokens = word_tokenize(text)
-        tokens = [word for word in tokens if word not in string.punctuation]    # remove punctuation
-        return pos_tag(tokens)
+        # add words to a list
+        # remove punctuation
+        # split words on / and - to avoid cases like brain/mental being 1 word
+        processed_tokens = []
+        for word in tokens:
+            if word not in string.punctuation:
+                for split_word in re.split(r'[/-]', word):
+                    processed_tokens.append(split_word)
+        return pos_tag(processed_tokens)
     except LookupError:
         print("Missing nltk resources, consider running nltk_download.py")
 
