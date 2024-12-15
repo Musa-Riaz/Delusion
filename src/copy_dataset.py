@@ -1,7 +1,7 @@
 # this creates a copy of the original dataset's first n rows for testing
 import csv
 
-NUM_ARTICLES = 10000
+NUM_ARTICLES = 1000
 with open('medium_articles.csv', encoding='utf-8') as file:
     reader = csv.reader(file)
     with open('n_articles.csv', 'w', encoding='utf-8') as file:

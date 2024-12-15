@@ -4,6 +4,7 @@ import csv
 import ast
 import regex as re
 import os
+import struct
 
 # write the data to forward index in batches of..
 BATCH_WRITE_SIZE = 1000
@@ -39,7 +40,8 @@ dataset_file = 'n_articles.csv'    # <---------------- change this for indexing 
 lexicon_file = 'indexes/lexicon.csv'
 ids_file = 'indexes/next_ids.txt'
 forward_index_folder = 'indexes/forward_index'
-indexed_urls_file = 'indexes/indexed_urls.txt'
+indexed_urls_file = 'indexes/indexed_urls.txt'  # used to check which URLs have been indexed already
+processed_docs_file = 'indexes/processed'       # used for retrieving document data given doc id
 
 
 next_word_id, next_doc_id = fh.load_ids(ids_file)
@@ -50,6 +52,7 @@ indexed = 0
 
 lexicon_entries = []
 forward_index_entries = []
+processed_docs = []
 
 try:
     file = open(dataset_file, encoding='utf-8')
@@ -68,6 +71,7 @@ try:
 
         new_urls.add(this_hash)
         print(f"Indexing {this_hash}...")
+        processed_docs.append([next_doc_id, article[TITLE], article[URL], article[AUTHORS], article[TAGS]])
         indexed += 1
 
         # these entries will contain an entry for this document in each barrel
@@ -123,6 +127,8 @@ try:
         # write the current batch to the files and clear the entries to save memory
         if indexed % BATCH_WRITE_SIZE == 0:
             print(f"Writing batch {next_doc_id - BATCH_WRITE_SIZE} to {next_doc_id} to forward index file.")
+            fh.write_to_csv(processed_docs_file + '.csv', processed_docs, 'a')
+            processed_docs = []
             for i in range(len(forward_index_entries)):
                 if forward_index_entries[i]:
                     # writes to the specific barrels
@@ -133,6 +139,8 @@ try:
     # write last entries to forward index barrels
     if forward_index_entries:
         print(f"Writing batch {next_doc_id - (next_doc_id % BATCH_WRITE_SIZE)} to {next_doc_id} to forward index file.")
+        fh.write_to_csv(processed_docs_file + '.csv', processed_docs, 'a')
+        processed_docs = []
         for i in range(len(forward_index_entries)):
                 if forward_index_entries[i]:
                     fh.write_to_csv(forward_index_folder + f'/{i}.csv', forward_index_entries[i], 'a')
@@ -142,6 +150,11 @@ finally:
     file.close()
 
 fh.write_to_csv(lexicon_file, lexicon_entries, 'a')
+
+# create and write offsets for processed documents
+offsets = fh.create_document_offsets(processed_docs_file + '.csv')
+with open(processed_docs_file + '.bin', 'wb') as file:
+    file.write(b''.join(struct.pack('I', offset) for offset in offsets))
 
 # update ids for future indexing
 with open(ids_file, 'w') as file:

@@ -26,7 +26,6 @@ def load_lexicon(lexicon_file):
                     lexicon[row[0]] = int(row[1])
             return lexicon
     except IOError:
-        print(f"Couldn't open {lexicon_file}, starting with empty lexicon...")
         return {}
 
 def load_forward_barrel(forward_barrel_file):
@@ -45,16 +44,6 @@ def load_forward_barrel(forward_barrel_file):
         print(f"Couldn't open {forward_index}, starting with empty forward index...")
         return {}
     
-def load_inverted_offsets(inverted_offset_file):
-    offsets = []
-    with open(inverted_offset_file, 'rb') as file:
-        data = file.read()
-        for i in range(0, len(data), 4):
-            offset = struct.unpack('I', data[i:i+4])[0]
-            offsets.append(offset)
-        return offsets
-    return []
-    
 def convert_to_csv(index_entry):
     converted = []
     for id in index_entry:
@@ -65,6 +54,26 @@ def convert_to_csv(index_entry):
     return converted
     
 def write_to_csv(file_name, entries, mode):
-    with open(file_name, mode, newline='') as file:
+    with open(file_name, mode, newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerows(entries)
+
+# creates offsets for a the first byte of each line of a csv file
+def create_document_offsets(documents_file):
+    # reading 1 mb at a time
+    CHUNK_SIZE = 1024 * 1024
+
+    with open(documents_file, 'rb') as file:
+        offsets = []
+        offset = 0
+
+        while chunk := file.read(CHUNK_SIZE):
+            lines = chunk.split(b'\n')
+            # skip last line
+            for line in lines[:-1]:
+                offsets.append(offset)
+                offset += len(line) + 1
+
+        offset += len(lines[-1])
+    
+    return offsets
