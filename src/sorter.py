@@ -21,9 +21,12 @@ while True:
         inverted_barrel = {}
         
         print(f"Sorting barrel {barrel_number}...")
-        for doc_id in forward_barrel:
+        for doc_id in list(forward_barrel.keys()):
             # this_index is all the words in the current document with their hitlists
             this_index = forward_barrel[doc_id]
+            
+            # free memory of this forward entry
+            del forward_barrel[doc_id]
 
             for word_id in this_index:
                 if word_id not in inverted_barrel:
