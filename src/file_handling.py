@@ -64,7 +64,7 @@ def convert_to_csv(index_entry):
         converted.append([int(id), this_id_hits])
     return converted
     
-def append_to_csv(file_name, entries):
-    with open(file_name, 'a', newline='') as file:
+def write_to_csv(file_name, entries, mode):
+    with open(file_name, mode, newline='') as file:
         writer = csv.writer(file)
         writer.writerows(entries)

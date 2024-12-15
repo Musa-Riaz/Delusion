@@ -5,7 +5,8 @@ import ast
 import regex as re
 import os
 
-BATCH_WRITE_SIZE = 100
+# write the data to forward index in batches of..
+BATCH_WRITE_SIZE = 1000
 
 # in words
 BARREL_SIZE = 1000
@@ -34,7 +35,7 @@ def get_tagged_text(text, section):
         return wp.tag_text('')
 
 
-dataset_file = 'practice_dataset2.csv'    # <---------------- change this for indexing a different dataset
+dataset_file = 'n_articles.csv'    # <---------------- change this for indexing a different dataset
 lexicon_file = 'indexes/lexicon.csv'
 ids_file = 'indexes/next_ids.txt'
 forward_index_folder = 'indexes/forward_index'
@@ -126,7 +127,7 @@ try:
                 if forward_index_entries[i]:
                     # writes to the specific barrels
                     # barrels are name as n.csv where n is the barrel number
-                    fh.append_to_csv(forward_index_folder + f'/{i}.csv', forward_index_entries[i])
+                    fh.write_to_csv(forward_index_folder + f'/{i}.csv', forward_index_entries[i], 'a')
             forward_index_entries = []
     
     # write last entries to forward index barrels
@@ -134,13 +135,13 @@ try:
         print(f"Writing batch {next_doc_id - (next_doc_id % BATCH_WRITE_SIZE)} to {next_doc_id} to forward index file.")
         for i in range(len(forward_index_entries)):
                 if forward_index_entries[i]:
-                    fh.append_to_csv(forward_index_folder + f'/{i}.csv', forward_index_entries[i])
+                    fh.write_to_csv(forward_index_folder + f'/{i}.csv', forward_index_entries[i], 'a')
         forward_index_entries = []
         
 finally:
     file.close()
 
-fh.append_to_csv(lexicon_file, lexicon_entries)
+fh.write_to_csv(lexicon_file, lexicon_entries, 'a')
 
 # update ids for future indexing
 with open(ids_file, 'w') as file:
