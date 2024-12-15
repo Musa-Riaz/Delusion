@@ -15,6 +15,9 @@ except LookupError:
 
 # tags words in text based off part-of-speech
 def tag_text(text):
+    pattern = r'[^A-Za-z0-9 ]+'
+    # replace any non alphanumeric characters with space
+    text = re.sub(pattern, ' ', text)
     text = text.lower()
     text = text.encode('ascii', 'ignore').decode('ascii')   # removing non-ascii characters
     try:
@@ -44,7 +47,7 @@ def process_word(word, tag):
     elif tag.startswith('JJ'):
         processed = lemmatizer.lemmatize(word, pos='a')  # adjective
     else:
-        processed = lemmatizer.lemmatize(word)
+        processed = lemmatizer.lemmatize(word)          # regular lemmatization
     
     # to prevent some unexpected results such as 'better' -> 'b'
     if len(processed) <= 1:
