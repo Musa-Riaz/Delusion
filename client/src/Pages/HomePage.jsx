@@ -27,7 +27,7 @@ const HomePage = () => {
     <div className="bg-[#ffecd4]">
       <div className="flex flex-col w-full md:flex-col gap-6 justify-center items-center flex-grow h-screen">
         {/* Graphics */}
-        <div className="flex items-center  p-3">
+        <div className="flex items-center gap-12">
           <div className="flex flex-col items-center">
             <div className="bg-[#ffc4cc] flex  items-center md:p-5 rounded-full ">
               <h1 className="md:text-6xl font-bold">Delusion</h1>
@@ -35,7 +35,7 @@ const HomePage = () => {
             <h1 className=" md:text-6xl font-bold">Start Searching</h1>
           </div>
           <div>
-            <img src="/12.png" alt="image" />
+            <img src="/home.png" alt="image" />
           </div>
         </div>
         {/* Search bar */}
