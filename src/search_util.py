@@ -44,7 +44,7 @@ def get_doc_info(doc_id):
     
     with open('indexes/processed.csv', 'rb') as file:
         file.seek(pos)
-        data = file.read(next_pos - pos).decode()
+        data = file.read(next_pos - pos).decode(encoding='utf-8', errors='replace')
         return data
 
 word_docs = get_word_docs('apple')
