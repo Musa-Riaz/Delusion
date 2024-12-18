@@ -47,8 +47,9 @@ def get_doc_info(doc_id):
         data = file.read(next_pos - pos).decode()
         return data
 
-word_docs = get_word_docs('brain')
-word_docs = ast.literal_eval(ast.literal_eval(word_docs)[1])
-for i in range(len(word_docs)):
-    print(word_docs[i][1])
-    print(get_doc_info(word_docs[i][0]).encode(encoding='ascii', errors='replace').decode(encoding='ascii'))
+word_docs = get_word_docs('apple')
+if word_docs:
+    word_docs = ast.literal_eval(ast.literal_eval(word_docs)[1])
+    for i in range(len(word_docs)):
+        print(word_docs[i][1])
+        print(get_doc_info(word_docs[i][0]).encode(encoding='ascii', errors='replace').decode(encoding='ascii'))
