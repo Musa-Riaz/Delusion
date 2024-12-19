@@ -60,20 +60,12 @@ def write_to_csv(file_name, entries, mode):
 
 # creates offsets for a the first byte of each line of a csv file
 def create_document_offsets(documents_file):
-    # reading 1 mb at a time
-    CHUNK_SIZE = 1024 * 1024
-
     with open(documents_file, 'rb') as file:
         offsets = []
         offset = 0
 
-        while chunk := file.read(CHUNK_SIZE):
-            lines = chunk.split(b'\n')
-            # skip last line
-            for line in lines[:-1]:
-                offsets.append(offset)
-                offset += len(line) + 1
-
-        offset += len(lines[-1])
+        for line in file:
+            offsets.append(offset)
+            offset += len(line)
     
     return offsets

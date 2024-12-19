@@ -44,11 +44,12 @@ def get_doc_info(doc_id):
     
     with open('indexes/processed.csv', 'rb') as file:
         file.seek(pos)
-        data = file.read(next_pos - pos).decode()
+        data = file.read(next_pos - pos).decode(encoding='utf-8', errors='replace')
         return data
 
-word_docs = get_word_docs('brain')
-word_docs = ast.literal_eval(ast.literal_eval(word_docs)[1])
-for i in range(len(word_docs)):
-    print(word_docs[i][1])
-    print(get_doc_info(word_docs[i][0]).encode(encoding='ascii', errors='replace').decode(encoding='ascii'))
+word_docs = get_word_docs('apple')
+if word_docs:
+    word_docs = ast.literal_eval(ast.literal_eval(word_docs)[1])
+    for i in range(len(word_docs)):
+        print(word_docs[i][1])
+        print(get_doc_info(word_docs[i][0]).encode(encoding='ascii', errors='replace').decode(encoding='ascii'))
