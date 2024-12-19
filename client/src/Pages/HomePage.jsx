@@ -1,4 +1,5 @@
 import React from "react";
+import axios from 'axios'
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -9,19 +10,22 @@ const HomePage = () => {
   const [results, setResults] = useState();
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    //will make the logic of fetching api data here
-    //as the results will be fetched, direct the user to the results screen
-    //send results as props to the results screen and display them there
-    //also handle the logic, if query is empty, prompt the user to type something
-    console.log("sending")
-    if(query !== "") 
-    navigate("/results");
-  else
-    alert("Please type something to search");
-
-  }
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      const {data, status} = await axios.post("http://localhost:8000/data", {
+        "query": query
+      });
+      console.log('data', data.data)
+      if(status == 200)
+      setResults(data.data)
+    } catch (err) {
+      console.error("Error during search:", err);
+    } finally {
+      setLoading(false);
+      navigate('/results')
+    }
+  };
 
   return (
     <div className="bg-[#ffecd4]">
