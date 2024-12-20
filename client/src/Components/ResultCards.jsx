@@ -16,7 +16,9 @@ const ResultCards = ({
   imageUrl,
   tags,
   timeStamps,
+  data
 }) => {
+
   return (
     <div className="flex p-4">
       <Card className="w-[380px] flex flex-col overflow-hidden border rounded-lg shadow-lg">
@@ -26,6 +28,7 @@ const ResultCards = ({
         <CardContent className="p-4">
           {/* Image */}
             <div className="w-full h-32 border rounded-lg mb-4">
+              {console.log("data", data)}
               <img
                 src={imageUrl}
                 alt="Card graphic"

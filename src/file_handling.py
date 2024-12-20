@@ -26,6 +26,7 @@ def load_lexicon(lexicon_file):
                     lexicon[row[0]] = int(row[1])
             return lexicon
     except IOError:
+        print(f"Couldn't open {lexicon_file}.")
         return {}
 
 def load_forward_barrel(forward_barrel_file):

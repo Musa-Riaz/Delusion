@@ -2,6 +2,8 @@
 import file_handling as fh
 import ast
 import struct
+import csv
+from io import StringIO
 
 # given a word, returns its inverted index entrys
 def get_word_docs(word):
@@ -13,7 +15,7 @@ def get_word_docs(word):
         word_id = lexicon[word]
     except KeyError:
         print(f"'{word}' is not a part of the dataset.")
-        return
+        return []
     
     # calculate the barrel number and position of the word's entry
     barrel = word_id // 1000
@@ -32,7 +34,7 @@ def get_word_docs(word):
     with open(f'indexes/inverted_index/{barrel}.csv', 'rb') as file:
         file.seek(position)
         data = file.read(next_position - position).decode()
-        return data
+        return ast.literal_eval(ast.literal_eval(data)[1])
     
 # returns a document's info (except text) given doc id
 def get_doc_info(doc_id):
@@ -44,12 +46,17 @@ def get_doc_info(doc_id):
     
     with open('indexes/processed.csv', 'rb') as file:
         file.seek(pos)
-        data = file.read(next_pos - pos).decode(encoding='utf-8', errors='replace')
+        data = file.read(next_pos - pos).decode()
+        # the csv row is obtained as a string
+        # read it using a csv reader to get it in a usable format
+        string_file = StringIO(data)
+        reader = csv.reader(string_file)
+        data = next(reader)
+        data[3] = ast.literal_eval(data[3])
+        data[4] = ast.literal_eval(data[4])
         return data
 
-word_docs = get_word_docs('apple')
-if word_docs:
-    word_docs = ast.literal_eval(ast.literal_eval(word_docs)[1])
-    for i in range(len(word_docs)):
-        print(word_docs[i][1])
-        print(get_doc_info(word_docs[i][0]).encode(encoding='ascii', errors='replace').decode(encoding='ascii'))
+# word_docs = get_word_docs('apple')
+# for i in range(1):
+#     print(word_docs[i][1])
+#     print(get_doc_info(word_docs[i][0]))
