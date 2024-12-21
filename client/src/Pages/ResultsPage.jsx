@@ -26,7 +26,7 @@ const ResultsPage = () => {
 
   const handleSearch = async (page = 1) => {
     setLoading(true);
-    setPage(1);//reset the page to 1 whenever a new search is made
+    
     try {
       const {data, status} = await axios.post(`http://localhost:8000/data?page=${page}`, { //will pass the page as a query parameter
         query, 
@@ -50,6 +50,7 @@ const ResultsPage = () => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
+      setPage(1);//reset the page to 1 whenever a new search is made
       handleSearch();
     }
   };
