@@ -17,14 +17,17 @@ const HomePage = () => {
     setLoading(true);
     
     try {
+      setLoading(true);
       const {data, status} = await axios.post(`http://localhost:8000/data?page=${page}`, { //will pass the page as a query parameter
         query, 
       });
+      setLoading(false);
       if(status == 200){
         dispatch(setResultData(data.data));
         dispatch(setEndLink(data.totalPages))
       }
     } catch (err) {
+      setLoading(false);
       console.error("Error during search:", err);
     } finally {
       setLoading(false);
@@ -40,6 +43,7 @@ const HomePage = () => {
   };
 
   return (
+    
     <div className="bg-[#ffecd4]">
       <div className="flex flex-col w-full md:flex-col gap-6 justify-center items-center flex-grow h-screen">
         {/* Graphics */}
