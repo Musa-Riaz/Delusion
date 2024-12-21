@@ -36,7 +36,7 @@ def get_tagged_text(text, section):
         return wp.tag_text('')
 
 
-dataset_file = 'n_articles.csv'    # <---------------- change this for indexing a different dataset
+dataset_file = 'medium_articles.csv'    # <---------------- change this for indexing a different dataset
 lexicon_file = 'indexes/lexicon.csv'
 ids_file = 'indexes/next_ids.txt'
 forward_index_folder = 'indexes/forward_index'

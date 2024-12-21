@@ -21,7 +21,7 @@ def rank_docs(docs, n, intersections):
 
         this_score = min(len(hit_list), 50)   # TEXT hits, capped at 50 arbitrarily, having 50 or 100 hits does not increase relevancy much
 
-        multiplier = intersection_multiplier(docs, intersections)
+        multiplier = intersection_multiplier(doc, intersections)
         this_score = this_score if multiplier == 1 else this_score + 30
 
         # smart checking of hits
