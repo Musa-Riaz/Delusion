@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setResultData } from "@/redux/slices/resultSlice";
 import { Frown } from "lucide-react";
 import {PacmanLoader } from 'react-spinners'
+import { useLocation } from "react-router";
 import {
   Pagination,
   PaginationContent,
@@ -15,13 +16,17 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-
+import { useNavigate } from "react-router";
+import { setEndLink } from "@/redux/slices/resultSlice";
+import {Button} from '@/components/ui/button'
 const ResultsPage = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   let [page, setPage] = useState(1); // Pagination page number
-  const [endLink, setEndLink] = useState();
+  const navigate = useNavigate();
   const {results} = useSelector((state) => state.result);
-  const [query, setQuery] = useState(""); // Search query
+  const {endLink} = useSelector((state) => state.result);
+  const [query, setQuery] = useState(location?.state?.query); //intializing its value as the query passed from the home page
   const [loading, setLoading] = useState(false); // Loading state
 
   const handleSearch = async (page = 1) => {
@@ -33,7 +38,7 @@ const ResultsPage = () => {
       });
       if(status == 200){
         dispatch(setResultData(data.data));
-        setEndLink(data.totalPages) //this state will be used to set the last page of the pagination
+        dispatch(setEndLink(data.totalPages)) //this state will be used to set the last page of the pagination
       }
     } catch (err) {
       console.error("Error during search:", err);
@@ -57,6 +62,9 @@ const ResultsPage = () => {
 
   return (
     <div className="bg-[#ffecd4] min-h-screen">
+      <div className=" p-2">
+      <Button onClick={()=>navigate('/')}>Home</Button>
+      </div>
       {/* Search Input Section */}
       <div className="flex justify-center items-center flex-col gap-6 p-10">
         <div className="w-[40vw] h-[6vh] flex rounded-lg border-4 border-black">

@@ -2,42 +2,39 @@ import React from "react";
 import axios from 'axios'
 import { Search } from "lucide-react";
 import { useState } from "react";
+import { setEndLink } from "../redux/slices/resultSlice";
 import { useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { setResultData } from "../redux/slices/resultSlice";
 const HomePage = () => {
   const [page, setPage] = useState(1); // Pagination page number
-  const limit = 8; // Pagination limit
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState();
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = async () => {
+  const handleSearch = async (page = 1) => {
     setLoading(true);
+    
     try {
-      const {data, status} = await axios.post("http://localhost:8000/data", {
+      const {data, status} = await axios.post(`http://localhost:8000/data?page=${page}`, { //will pass the page as a query parameter
         query, 
-        page,
-        limit
       });
-      console.log('data', data.data)
       if(status == 200){
-        setResults(data.data)
         dispatch(setResultData(data.data));
+        dispatch(setEndLink(data.totalPages))
       }
-      
     } catch (err) {
       console.error("Error during search:", err);
     } finally {
       setLoading(false);
-      navigate('/results')
+      navigate('/results', {state: {query}})
     }
   };
   
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
+      setPage(1);//reset the page to 1 whenever a new search is made
       handleSearch();
     }
   };

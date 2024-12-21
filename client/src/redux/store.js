@@ -3,7 +3,7 @@ import { resultSlice } from "./slices/resultSlice";
 
 export default configureStore({
     reducer: {
-        result: resultSlice.reducer
+        result: resultSlice.reducer,
     }
 })
 
