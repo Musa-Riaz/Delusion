@@ -1,15 +1,14 @@
-# this file is currently only for testing
-import file_handling as fh
-import json
-import ast
-import struct
-import csv
-from io import StringIO
 from sortedcontainers import SortedList
+from ranking import rank_docs
+from io import StringIO
 import word_processing as wp
 import threading as th
+import struct
+import json
+import ast
+import csv
 
-# given a word, returns its inverted index entrys
+# given a word, returns its inverted index entries
 def get_word_docs(word, lexicon, results):
     # get the word's word id
     try:
@@ -60,74 +59,6 @@ def get_doc_info(doc_id):
         data[4] = ast.literal_eval(data[4])
         return data
 
-def rank_docs(docs, n, intersections):
-    # TITLE = 0
-    # TEXT = 1
-    # URL = 2
-    # AUTHORS = 3
-    # TAGS = 5
-    added = [False for i in range(6)]
-    top_docs = SortedList()
-    for doc in docs:
-        this_score = min(len(doc[1]), 50)
-        multiplier = 1
-        for i in range(len(intersections) - 1, -1, -1):
-            if doc[0] in intersections[i]:
-                multiplier = (i + 1) * 2
-                this_score += 30
-                # TODO : implement proximity ranking
-                break
-
-        i = 0
-        step = 1
-        while i < len(doc[1]) and i >= 0:
-            hit = doc[1][i]
-            match hit % 10: 
-                case 0:
-                    if not added[0]:
-                        this_score += 50
-                        added[0] = True
-                case 2:
-                    if not added[2]:
-                        this_score += 30
-                        added[2] = True
-                case 3:
-                    if not added[3]:
-                        this_score += 40
-                        added[3] = True
-                case 5:
-                    if not added[5]:
-                        this_score += 30
-                        added[5] = True
-            
-            # hits are stored in order, with TEXT hits in between TITLE and AUTHOR hits
-            # if a TEXT hit is encounted, all relevant hits are behind <i>
-            # so jump to the end of the list to process TAGS and AUTHORS hits
-            if hit % 10 == 1:
-                if step == 1:
-                    i = len(doc[1]) - 1
-                    step = -1
-                else:
-                    # the pointer is going backwards and reached a TEXT hit, meaning all relevant hits have been processed
-                    break
-            else:
-                i += step
-
-        this_score *= multiplier
-        # storing negative score for 'descending' order
-        #if len(top_docs) < n:
-        top_docs.add((-1 * this_score, doc[0]))
-        # elif this_score > lowest_top_score:
-        #     # pop removes 'minimum' score
-        #     top_docs.pop()
-        #     top_docs.add((-1 * this_score, doc[0]))
-        #     lowest_top_score = top_docs[-1][0]
-        
-        # if len(top_docs) == n and lowest_top_score < -80:
-        #     break
-    
-    return top_docs
-
 def convert_to_json(doc):
     doc_dict = {}
     doc_dict['title'] = doc[1]
@@ -140,6 +71,7 @@ def convert_to_json(doc):
 
 def get_results(query, n, lexicon):
     query = wp.process_query(query)
+    print(query)
 
     words = {}
     threads = []
@@ -159,7 +91,6 @@ def get_results(query, n, lexicon):
         for i in range(2, len(doc_ids)):
             intersections.append(intersections[i-2].intersection(doc_ids[i]))
 
-    print(intersections)    
     result_docs_set = set()
     result_docs = []
     for docs in words.values():
@@ -170,9 +101,8 @@ def get_results(query, n, lexicon):
                 result_docs_set.add(doc[1])
     
     result_docs = list(result_docs)
-    NUM_RESULTS = 8
     results = []
-    for i in range(min(len(result_docs), NUM_RESULTS)):
+    for i in range(min(len(result_docs), n)):
         results.append(convert_to_json(get_doc_info(result_docs[i])))
 
     return results
