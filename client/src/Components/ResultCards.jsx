@@ -21,14 +21,13 @@ const ResultCards = ({
 
   return (
     <div className="flex p-4">
-      <Card className="w-[380px] flex flex-col overflow-hidden border rounded-lg shadow-lg">
+      <Card className="w-[380px] flex flex-col overflow-hidden border rounded-lg shadow-lg transition-transform transform hover:scale-105 duration-200 ease-in-out">
         <CardHeader className="p-4">
           <CardTitle className="text-lg font-bold truncate">{title}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           {/* Image */}
             <div className="w-full h-32 border rounded-lg mb-4">
-              {console.log("data", data)}
               <img
                 src={imageUrl}
                 alt="Card graphic"
@@ -51,7 +50,7 @@ const ResultCards = ({
         </CardContent>
         <CardFooter className="p-4 bg-gray-50">
           {/* Tags and Timestamps */}
-          <div className="flex flex-wrap justify-between gap-2">
+          <div className="flex items-start justify-between gap-2">
             {/* Tags */}
             <div className="flex flex-wrap gap-2">
               {tags.map((tag, index) => (
@@ -75,6 +74,7 @@ const ResultCards = ({
               ))}
             </div>
           </div>
+
         </CardFooter>
       </Card>
     </div>

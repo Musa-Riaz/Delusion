@@ -3,9 +3,13 @@ import axios from 'axios'
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useSelector, useDispatch } from "react-redux";
+import { setResultData } from "../redux/slices/resultSlice";
 const HomePage = () => {
+  const [page, setPage] = useState(1); // Pagination page number
+  const limit = 8; // Pagination limit
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState();
   const [loading, setLoading] = useState(false);
@@ -14,16 +18,27 @@ const HomePage = () => {
     setLoading(true);
     try {
       const {data, status} = await axios.post("http://localhost:8000/data", {
-        "query": query
+        query, 
+        page,
+        limit
       });
       console.log('data', data.data)
-      if(status == 200)
-      setResults(data.data)
+      if(status == 200){
+        setResults(data.data)
+        dispatch(setResultData(data.data));
+      }
+      
     } catch (err) {
       console.error("Error during search:", err);
     } finally {
       setLoading(false);
       navigate('/results')
+    }
+  };
+  
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
     }
   };
 
@@ -44,7 +59,7 @@ const HomePage = () => {
         </div>
         {/* Search bar */}
         <div className="w-[50vw] h-[10vh] flex rounded-lg border-4  border-black ">
-            <input type="text" placeholder="Type Anything" value={query} onChange={(e) => setQuery(e.target.value)} className="bg-[#ffecd4] w-full text-2xl placeholder-black placeholder:text-2xl p-3 focus:outline-none" />
+            <input type="text" placeholder="Type Anything" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} className="bg-[#ffecd4] w-full text-2xl placeholder-black placeholder:text-2xl p-3 focus:outline-none" />
             <span onClick={ handleSearch} className="flex p-5 border-l-4 border-black items-center hover:shadow-2xl transition hover:cursor-pointer"><Search/></span>
         </div>
       </div>
