@@ -1,5 +1,6 @@
 # this file is currently only for testing
 import file_handling as fh
+import json
 import ast
 import struct
 import csv
@@ -16,6 +17,7 @@ def get_word_docs(word, lexicon, results):
     except KeyError:
         print(f"'{word}' is not a part of the dataset.")
         results[word] = []
+        return
     
     # calculate the barrel number and position of the word's entry
     barrel = word_id // 1000
@@ -34,7 +36,9 @@ def get_word_docs(word, lexicon, results):
     with open(f'indexes/inverted_index/{barrel}.csv', 'rb') as file:
         file.seek(position)
         data = file.read(next_position - position).decode()
-        results[word] = ast.literal_eval(ast.literal_eval(data)[1])
+        data = json.loads(ast.literal_eval(data)[1])
+        results[word] = data
+
     
 # returns a document's info (except text) given doc id
 def get_doc_info(doc_id):
@@ -55,52 +59,74 @@ def get_doc_info(doc_id):
         data[3] = ast.literal_eval(data[3])
         data[4] = ast.literal_eval(data[4])
         return data
-    
-TITLE = 0
-TEXT = 1
-URL = 2
-AUTHORS = 3
-TAGS = 5
 
-def min_index(array):
-    min = array[0][1]
-    for i in range(1, len(array)):
-        if array[i][1] < array[min][1]:
-            min = i
-    return min
-
-def rank_docs(docs, n):
+def rank_docs(docs, n, intersections):
+    # TITLE = 0
+    # TEXT = 1
+    # URL = 2
+    # AUTHORS = 3
+    # TAGS = 5
+    added = [False for i in range(6)]
     top_docs = SortedList()
-    lowest_top_score = 0
     for doc in docs:
-        this_score = min(len(doc[1]), 100)
-        for hit in doc[1]:
-            if hit % 10 == TITLE:
-                this_score += 50
-            elif hit % 10 == URL:
+        this_score = min(len(doc[1]), 50)
+        multiplier = 1
+        for i in range(len(intersections) - 1, -1, -1):
+            if doc[0] in intersections[i]:
+                multiplier = (i + 1) * 2
                 this_score += 30
-            elif hit % 10 == AUTHORS:
-                this_score += 40
-            elif hit % 10 == TAGS:
-                this_score += 30
-
-            if hit % 10 != TEXT:
+                # TODO : implement proximity ranking
                 break
-        
+
+        i = 0
+        step = 1
+        while i < len(doc[1]) and i >= 0:
+            hit = doc[1][i]
+            match hit % 10: 
+                case 0:
+                    if not added[0]:
+                        this_score += 50
+                        added[0] = True
+                case 2:
+                    if not added[2]:
+                        this_score += 30
+                        added[2] = True
+                case 3:
+                    if not added[3]:
+                        this_score += 40
+                        added[3] = True
+                case 5:
+                    if not added[5]:
+                        this_score += 30
+                        added[5] = True
+            
+            # hits are stored in order, with TEXT hits in between TITLE and AUTHOR hits
+            # if a TEXT hit is encounted, all relevant hits are behind <i>
+            # so jump to the end of the list to process TAGS and AUTHORS hits
+            if hit % 10 == 1:
+                if step == 1:
+                    i = len(doc[1]) - 1
+                    step = -1
+                else:
+                    # the pointer is going backwards and reached a TEXT hit, meaning all relevant hits have been processed
+                    break
+            else:
+                i += step
+
+        this_score *= multiplier
         # storing negative score for 'descending' order
-        if len(top_docs) < n:
-            top_docs.add((-1 * this_score, doc[0]))
-        elif this_score > lowest_top_score:
-            # pop removes 'minimum' score
-            top_docs.pop()
-            top_docs.add((-1 * this_score, doc[0]))
-            lowest_top_score = top_docs[-1][0]
+        #if len(top_docs) < n:
+        top_docs.add((-1 * this_score, doc[0]))
+        # elif this_score > lowest_top_score:
+        #     # pop removes 'minimum' score
+        #     top_docs.pop()
+        #     top_docs.add((-1 * this_score, doc[0]))
+        #     lowest_top_score = top_docs[-1][0]
         
-        if len(top_docs) == n and lowest_top_score < -80:
-            break
+        # if len(top_docs) == n and lowest_top_score < -80:
+        #     break
     
-    print([doc[0] for doc in top_docs])
-    return [doc[1] for doc in top_docs]
+    return top_docs
 
 def convert_to_json(doc):
     doc_dict = {}
@@ -109,12 +135,11 @@ def convert_to_json(doc):
     doc_dict['description'] = 'THIS IS DESCRIPTION HEHE'
     doc_dict['imageUrl'] = 'https://buzz-plus.com/wp-content/uploads/2021/04/cutest-monkey-video-in-the-world.jpg'
     doc_dict['tags'] = doc[4]
-    doc_dict['timeStamps'] = ['now', 'then']
+    doc_dict['timeStamps'] = ['now']
     return doc_dict
 
 def get_results(query, n, lexicon):
     query = wp.process_query(query)
-    print(query)
 
     words = {}
     threads = []
@@ -126,11 +151,28 @@ def get_results(query, n, lexicon):
     for thread in threads:
         thread.join()
 
-    docs = get_word_docs(query.pop(), lexicon)
+    intersections = []
+    if len(words) > 1:
+        doc_ids = [[doc_hits[0] for doc_hits in docs] for docs in words.values()]
+
+        intersections.append(set(doc_ids[0]).intersection(doc_ids[1]))
+        for i in range(2, len(doc_ids)):
+            intersections.append(intersections[i-2].intersection(doc_ids[i]))
+
+    print(intersections)    
+    result_docs_set = set()
+    result_docs = []
+    for docs in words.values():
+        if docs:
+            for doc in rank_docs(docs, 1, intersections):
+                if doc[1] not in result_docs_set:
+                    result_docs.append(doc[1])
+                result_docs_set.add(doc[1])
+    
+    result_docs = list(result_docs)
+    NUM_RESULTS = 8
     results = []
-    if docs:
-        docs = rank_docs(docs, n)
-        for i in range(len(docs)):
-            this_doc = get_doc_info(docs[i])
-            results.append(convert_to_json(this_doc))
+    for i in range(min(len(result_docs), NUM_RESULTS)):
+        results.append(convert_to_json(get_doc_info(result_docs[i])))
+
     return results
