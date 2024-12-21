@@ -54,12 +54,12 @@ const ResultCards = ({
             {/* Tags */}
             <div className="flex flex-wrap gap-2">
               {tags.map((tag, index) => (
-                <span
+                <a
                   key={index}
-                  className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-md shadow-sm"
+                  className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-md shadow-sm hover:cursor-pointer"
                 >
                   {tag}
-                </span>
+                </a>
               ))}
             </div>
             {/* Timestamps */}

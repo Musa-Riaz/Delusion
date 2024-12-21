@@ -5,6 +5,7 @@ import { useState } from "react";
 import { setEndLink } from "../redux/slices/resultSlice";
 import { useNavigate } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
+import {MoonLoader} from 'react-spinners'
 import { setResultData } from "../redux/slices/resultSlice";
 const HomePage = () => {
   const [page, setPage] = useState(1); // Pagination page number
@@ -43,7 +44,6 @@ const HomePage = () => {
   };
 
   return (
-    
     <div className="bg-[#ffecd4]">
       <div className="flex flex-col w-full md:flex-col gap-6 justify-center items-center flex-grow h-screen">
         {/* Graphics */}
@@ -61,8 +61,14 @@ const HomePage = () => {
         {/* Search bar */}
         <div className="w-[50vw] h-[10vh] flex rounded-lg border-4  border-black ">
             <input type="text" placeholder="Type Anything" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} className="bg-[#ffecd4] w-full text-2xl placeholder-black placeholder:text-2xl p-3 focus:outline-none" />
-            <span onClick={ handleSearch} className="flex p-5 border-l-4 border-black items-center hover:shadow-2xl transition hover:cursor-pointer"><Search/></span>
+            <span onClick={ handleSearch} className="flex p-5 border-l-4 border-black items-center hover:shadow-2xl transition hover:cursor-pointer"><Search/>
+            </span>
         </div>
+        {loading && (
+        <div className="flex justify-center items-center ">
+          <MoonLoader color="#000"  size={50} />
+        </div>
+            )}
       </div>
     </div>
   );

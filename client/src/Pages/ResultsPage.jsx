@@ -5,7 +5,7 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setResultData } from "@/redux/slices/resultSlice";
 import { Frown } from "lucide-react";
-import {PacmanLoader } from 'react-spinners'
+import {MoonLoader } from 'react-spinners'
 import { useLocation } from "react-router";
 import {
   Pagination,
@@ -90,7 +90,7 @@ const ResultsPage = () => {
       <div className="flex flex-wrap justify-between p-5">
         {loading ? (
           <div className="flex justify-center items-center w-full h-full">
-            <PacmanLoader color="#000" size={60} />
+            <MoonLoader color="#000" size={60} />
           </div> // Show loading text while fetching results
         ) : results.length > 0 ? (
           results.map((data, index) => (
@@ -115,7 +115,7 @@ const ResultsPage = () => {
 
       {/* Pagination */}
       {results.length > 0 && (
-        <div className="p-8 flex justify-center items-center border-black">
+        <div className="p-8 flex justify-center items-center border-black ">
         <Pagination>
           <PaginationContent>
             <PaginationItem>
@@ -149,7 +149,7 @@ const ResultsPage = () => {
               <PaginationEllipsis />
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink onClick={() => handlePageChange(page=endLink)}>
+              <PaginationLink  className="hover:cursor-pointer" onClick={() => handlePageChange(page=endLink)}>
                 {endLink}
               </PaginationLink>
             </PaginationItem>
