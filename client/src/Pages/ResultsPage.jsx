@@ -70,7 +70,6 @@ const ResultsPage = () => {
    
     setQuery(suggestion);
     setPage(1); // Reset page to 1 for a new search
-    // handleSearch(1);
   };
 
   const handleInputChange = (e) => {
@@ -163,13 +162,16 @@ const ResultsPage = () => {
         <div className="p-8 flex justify-center items-center border-black ">
         <Pagination>
           <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious className="hover:cursor-pointer" onClick={() => handlePageChange(page -1)}/>
-            </PaginationItem>
+            {page !== 1 ? (
+                          <PaginationItem >
+                          <PaginationPrevious className="hover:cursor-pointer" onClick={() => handlePageChange(page -1)}/>
+                        </PaginationItem>
+            ) : null}
             <PaginationItem>
               <PaginationLink
                 className="hover:cursor-pointer"
-                onClick={() => handlePageChange(page=1)}
+                onClick={() => {handlePageChange(page=1)}}
+                isActive={page === 1}
               >
                 1
               </PaginationLink>
@@ -178,6 +180,7 @@ const ResultsPage = () => {
               <PaginationLink
                 className="hover:cursor-pointer"
                 onClick={() => handlePageChange(page=2)}
+                isActive={page === 2}
               >
                 2
               </PaginationLink>
@@ -186,6 +189,7 @@ const ResultsPage = () => {
               <PaginationLink
                 className="hover:cursor-pointer"
                 onClick={() => handlePageChange(page=3)}
+                isActive={page === 3}
               >
                 3
               </PaginationLink>
@@ -194,13 +198,15 @@ const ResultsPage = () => {
               <PaginationEllipsis />
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink  className="hover:cursor-pointer" onClick={() => handlePageChange(page=endLink)}>
+              <PaginationLink  className="hover:cursor-pointer" onClick={() => handlePageChange(page=endLink)} isActive={page === endLink}>
                 {endLink}
               </PaginationLink>
             </PaginationItem>
-            <PaginationItem>
+            {page !== endLink ? (
+              <PaginationItem>
               <PaginationNext className="hover:cursor-pointer"  onClick={() => handlePageChange(page+1)} />
             </PaginationItem>
+            ) : null}
           </PaginationContent>
         </Pagination>
       </div>
