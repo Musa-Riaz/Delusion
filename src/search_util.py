@@ -69,7 +69,7 @@ def convert_to_json(doc, score):
     doc_dict['timeStamps'] = ['now']
     return doc_dict
 
-def get_results(query, n, lexicon):
+def get_results(query, lexicon, start, end):
     query = wp.process_query(query)
     print(query)
 
@@ -96,10 +96,12 @@ def get_results(query, n, lexicon):
     
     result_docs = list(result_docs)
     results = []
-    for i in range(min(len(result_docs), n)):
+    for i in range(start, end):
+        if i >= len(result_docs):
+            break
         results.append(convert_to_json(get_doc_info(result_docs[i][1]), result_docs[i][0]))
 
-    return results
+    return results, len(result_docs)
 
 def intersect(doc_lists):
     if len(doc_lists) <= 1:

@@ -1,4 +1,7 @@
+from file_handling import load_frequencies
 from sortedcontainers import SortedList
+from random import choice
+import file_handling
 
 class TrieNode:
     def __init__(self):
@@ -6,9 +9,8 @@ class TrieNode:
         self.word = None
 
 class Trie:
-    def __init__(self, num_results):
+    def __init__(self):
         self.root = TrieNode()
-        self.num_results = num_results
           
     def insert(self, word, frequency):
         node = self.root
@@ -21,7 +23,7 @@ class Trie:
         # or there are less than n words
         node.word = (-1 * frequency, word)
 
-    def autocomplete(self, prefix):
+    def autocomplete(self, prefix, num_results):
         node = self.root
         # traverse the trie with the prefix chars
         for char in prefix:
@@ -31,14 +33,14 @@ class Trie:
       
         # collect the top n words from this prefix
         result = SortedList()
-        self._collect_words(node, result)
+        self._collect_words(node, result, num_results)
         result = [word[1] for word in result]
         return result
     
-    def _collect_words(self, node, result):
+    def _collect_words(self, node, result, num_results):
         # stores a list of 8 words sorted on frequency
         if node.word:
-            if len(result) < self.num_results:
+            if len(result) < num_results:
                 result.add(node.word)
             elif node.word[0] < result[-1][0]:
                 result.pop()
@@ -46,4 +48,20 @@ class Trie:
 
         # recursively collect each child's words if it has a higher frequency
         for child in node.children.values():
-            self._collect_words(child, result)
+            self._collect_words(child, result, num_results)
+
+
+def create_autocomplete_trie(num_words, lexicon):
+    trie = Trie()
+    frequencies = load_frequencies('indexes/frequencies.bin')
+    for word in lexicon:
+        word_id = lexicon[word]
+        if word_id > num_words:
+            break
+        trie.insert(word, frequencies[word_id])
+    return trie
+
+def get_suggestions(trie, lexicon, prefix, num_results):
+    if prefix == '':
+        return [choice(lexicon.keys()) for i in range(num_results)]
+    return trie.autocomplete(prefix, num_results)
