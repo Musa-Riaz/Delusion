@@ -1,7 +1,7 @@
 from sortedcontainers import SortedList
 
 # given the documents of 1 word, ranks them based on word hits
-def rank_docs(docs, n, intersections):
+def rank_docs(docs, intersections):
     # any hits other than TEXT are referred to as special hits
     # TITLE = 0
     # TEXT = 1
@@ -22,7 +22,7 @@ def rank_docs(docs, n, intersections):
         this_score = min(len(hit_list), 50)   # TEXT hits, capped at 50 arbitrarily, having 50 or 100 hits does not increase relevancy much
 
         multiplier = intersection_multiplier(doc, intersections)
-        this_score = this_score if multiplier == 1 else this_score + 30
+        this_score = this_score if multiplier == 1 else this_score + 10
 
         # smart checking of hits
         # by design, hits are stored in the indexes with TITLE first, then all TEXT hits, then URL, AUTHOR, TAGS
@@ -72,11 +72,12 @@ def rank_docs(docs, n, intersections):
 
 
 def intersection_multiplier(doc, intersections):
-    # for multi-word queries, intersections contains cumulative intersections of all the words
+    # for multi-word queries, intersections contains cuwemulative intersections of all the words
     # more detail in search_util.py
-    for i in range(len(intersections) - 1, -1, -1):     # loop from last intersection (which is an intersection of all words)
+    for i in range(len(intersections) - 1, 0, -1):     # loop from last intersection (which is an intersection of all words)
         if doc[0] in intersections[i]:
             # multiplier is higher for the order of intersection the document is found in
+            if intersections[i][doc[0]]:
+                return (i + 1) * 100        # intersection is in title/url/authors/tags
             return (i + 1) * 2
-            # TODO : implement proximity ranking
     return 1

@@ -1,7 +1,8 @@
 # contains word processing functions
 from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from num2words import num2words
 from nltk import pos_tag
 import string
 import regex as re
@@ -62,9 +63,16 @@ def process_query(query):
     query = query.lower()
     query = query.encode('ascii', 'ignore').decode('ascii') 
 
-    processed = set()
+    processed = {}
     for word in word_tokenize(query):
         if word in stop_words or len(word) == 1:
+            continue
+        
+        # for some simple improvements, such as including results for 'nine' when 9 searched
+        # ideally, the lemmatization initially should have done this
+        if word.isdigit():
+            processed[word] = None
+            processed[num2words(int(word))] = None
             continue
 
         processed_word = lemmatizer.lemmatize(word, pos='n')
@@ -76,6 +84,6 @@ def process_query(query):
                     processed_word = lemmatizer.lemmatize(word)
 
         if len(processed_word) <= 1:
-            processed.add(word)
-        processed.add(processed_word)
-    return processed
+            processed[word] = None
+        processed[processed_word] = None
+    return list(processed.keys())

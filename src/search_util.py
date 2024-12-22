@@ -1,4 +1,3 @@
-from sortedcontainers import SortedList
 from ranking import rank_docs
 from io import StringIO
 import word_processing as wp
@@ -59,12 +58,13 @@ def get_doc_info(doc_id):
         data[4] = ast.literal_eval(data[4])
         return data
 
-def convert_to_json(doc):
+def convert_to_json(doc, score):
     doc_dict = {}
+    doc[4].extend([score, doc[0]])
     doc_dict['title'] = doc[1]
     doc_dict['url'] = doc[2]
     doc_dict['description'] = 'THIS IS DESCRIPTION HEHE'
-    doc_dict['imageUrl'] = 'https://buzz-plus.com/wp-content/uploads/2021/04/cutest-monkey-video-in-the-world.jpg'
+    doc_dict['imageUrl'] = r'https://www.meme-arsenal.com/memes/5d2155364664354f74ceec5ecd9e6e8c.jpg'
     doc_dict['tags'] = doc[4]
     doc_dict['timeStamps'] = ['now']
     return doc_dict
@@ -83,26 +83,44 @@ def get_results(query, n, lexicon):
     for thread in threads:
         thread.join()
 
-    intersections = []
-    if len(words) > 1:
-        doc_ids = [[doc_hits[0] for doc_hits in docs] for docs in words.values()]
-
-        intersections.append(set(doc_ids[0]).intersection(doc_ids[1]))
-        for i in range(2, len(doc_ids)):
-            intersections.append(intersections[i-2].intersection(doc_ids[i]))
+    intersections = intersect(words.values())
 
     result_docs_set = set()
     result_docs = []
     for docs in words.values():
         if docs:
-            for doc in rank_docs(docs, 1, intersections):
+            for doc in rank_docs(docs, intersections):
                 if doc[1] not in result_docs_set:
-                    result_docs.append(doc[1])
+                    result_docs.append(doc)
                 result_docs_set.add(doc[1])
     
     result_docs = list(result_docs)
     results = []
     for i in range(min(len(result_docs), n)):
-        results.append(convert_to_json(get_doc_info(result_docs[i])))
+        results.append(convert_to_json(get_doc_info(result_docs[i][1]), result_docs[i][0]))
 
     return results
+
+def intersect(doc_lists):
+    if len(doc_lists) <= 1:
+        return []
+    
+    doc_lists = [{doc[0] : is_relevant(doc[1]) for doc in doc_list} for doc_list in doc_lists]
+    intersections = [doc_lists[0]]
+    
+    for i in range(1, len(doc_lists)):
+        this_intersection = {}
+        for doc_id in doc_lists[i]:
+            if doc_id in intersections[i - 1]:
+                if doc_lists[i][doc_id] and intersections[i - 1][doc_id]:
+                    this_intersection[doc_id] = True
+                else:
+                    this_intersection[doc_id] = False
+        intersections.append(this_intersection)
+    return intersections
+        
+# a hit list is considered relevant if it contains any hits other than text
+def is_relevant(hit_list):
+    # hit lists store hits in order title, text, url, author, tags
+    # so only the first and last hits can be relevant
+    return hit_list[0] % 10 != 1 or hit_list[-1] % 10 != 1

@@ -44,6 +44,17 @@ def load_forward_barrel(forward_barrel_file):
     except IOError:
         print(f"Couldn't open {forward_index}, starting with empty forward index...")
         return {}
+
+def load_frequencies(frequencies_file):
+    try:
+        with open(frequencies_file, 'rb') as file:
+            data = file.read()
+            num_freq = len(data) // 4
+            frequencies = struct.unpack(f'{num_freq}i', data)
+            return frequencies
+    except IOError:
+        print(f"Couldn't open {frequencies_file}.")
+        return []
     
 def convert_to_csv(index_entry):
     converted = []
@@ -68,5 +79,19 @@ def create_document_offsets(documents_file):
         for line in file:
             offsets.append(offset)
             offset += len(line)
+    
+    return offsets
+
+def create_document_offsets(documents_file):
+    offsets = []
+    
+    with open(documents_file, 'rb') as file:
+        current_offset = 0
+        
+        reader = csv.reader((line.decode('utf-8') for line in file), quotechar='"', delimiter=',')
+        
+        for row in reader:
+            offsets.append(current_offset)
+            current_offset = file.tell()
     
     return offsets
