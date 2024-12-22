@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from math import ceil
 import uvicorn
 from pydantic import BaseModel
+import file_handling as fh
+from fastapi import Query
 import search_util
 
 def convert_to_json(doc):
@@ -48,6 +50,17 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8):
                           "page": page,
                           "limit": limit,#this is the limit, i.e the number of results per page
                           })
+
+@app.get("/suggestions")
+async def get_suggestions(query: str = Query(..., min_length=1, description="Search query"), limit: int = 10):
+    try:
+        lexicon = fh.load_lexicon('indexes/lexicon.csv')
+        suggestions = [word for word in lexicon.keys() if word.lower().startswith(query.lower())]
+
+        return JSONResponse(content={"suggestions":suggestions[:limit]})
+    except Exception as e:
+         return JSONResponse(content={"error": str(e)}, status_code=500)
+   
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)

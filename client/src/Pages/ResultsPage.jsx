@@ -28,29 +28,63 @@ const ResultsPage = () => {
   const {endLink} = useSelector((state) => state.result);
   const [query, setQuery] = useState(location?.state?.query); //intializing its value as the query passed from the home page
   const [loading, setLoading] = useState(false); // Loading state
+  const [suggestions, setSuggestions] = useState([]); // Suggestions state
 
-  const handleSearch = async (page = 1) => {
+  const handleSearch = async (newPage = page) => {
     setLoading(true);
-    
+    setSuggestions([]); // Clear suggestions after search
     try {
-      const {data, status} = await axios.post(`http://localhost:8000/data?page=${page}`, { //will pass the page as a query parameter
+      const {data, status} = await axios.post(`http://localhost:8000/data?page=${newPage}`, { //will pass the page as a query parameter
         query, 
       });
       if(status == 200){
+        
         dispatch(setResultData(data.data));
         dispatch(setEndLink(data.totalPages)) //this state will be used to set the last page of the pagination
-      }
+      } 
     } catch (err) {
+      console.log('page number', newPage)
       console.error("Error during search:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchSuggestions = async (value) => {
+    if (!value.trim()) {
+      setSuggestions([]); // Clear suggestions if the query is empty
+      return;
+    }
+    try{
+      const res = await axios.get(`http://localhost:8000/suggestions?query=${query}`);
+      console.log(res.data);
+      setSuggestions(res.data.suggestions);
+    }
+    catch(err){
+      console.log(err);
+    }
+  
+  }
+
+  const handleSuggestionClick = (suggestion) => {
+   
+    setQuery(suggestion);
+    setPage(1); // Reset page to 1 for a new search
+    // handleSearch(1);
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    fetchSuggestions(value)
+  }
+
   const handlePageChange = (newPage) => {
-    console.log(newPage)
+    if (newPage > 0 && newPage <= endLink){
     setPage(newPage);
     handleSearch(newPage);
+    }
+    
   };
 
   const handleKeyDown = (e) => {
@@ -72,7 +106,7 @@ const ResultsPage = () => {
             type="text"
             placeholder="Type Anything"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown} // Trigger search on Enter key
             className="bg-[#ffecd4] w-full text-xl placeholder-black placeholder:text-xl p-3 focus:outline-none"
           />
@@ -82,7 +116,18 @@ const ResultsPage = () => {
           >
             <Search />
           </span>
+
         </div>
+          {/* Suggestions */}
+          {suggestions.length > 0 && query.trim() && (
+            <div style={{ top: '19%' }} className="absolute z-50 overflow-y-auto border p-2 w-[40vw] bg-white rounded-lg shadow-lg ">
+              {suggestions.map((suggestion, index) => (
+                <div key={index} className="p-2 hover:bg-gray-100 cursor-pointer" onClick={() => handleSuggestionClick(suggestion)}>
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+          )}
         <h1 className="text-5xl font-semibold">Results</h1>
       </div>
 

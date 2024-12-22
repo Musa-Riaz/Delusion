@@ -9,6 +9,7 @@ import {MoonLoader} from 'react-spinners'
 import { setResultData } from "../redux/slices/resultSlice";
 const HomePage = () => {
   const [page, setPage] = useState(1); // Pagination page number
+  const [suggestions, setSuggestions] = useState([]); // Suggestions state
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [query, setQuery] = useState("");
@@ -19,6 +20,7 @@ const HomePage = () => {
     
     try {
       setLoading(true);
+      setSuggestions([]); // Clear suggestions after search
       const {data, status} = await axios.post(`http://localhost:8000/data?page=${page}`, { //will pass the page as a query parameter
         query, 
       });
@@ -35,6 +37,35 @@ const HomePage = () => {
       navigate('/results', {state: {query}})
     }
   };
+
+  const fetchSuggestions = async (value) => {
+    if (!value.trim()) {
+      setSuggestions([]); // Clear suggestions if the query is empty
+      return;
+    }
+    try{
+      const res = await axios.get(`http://localhost:8000/suggestions?query=${query}`);
+      console.log(res.data);
+      setSuggestions(res.data.suggestions);
+    }
+    catch(err){
+      console.log(err);
+    }
+  
+  }
+
+  const handleSuggestionClick = (suggestion) => {
+   
+    setQuery(suggestion);
+    setPage(1); // Reset page to 1 for a new search
+    // handleSearch(1);
+  };
+  
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    fetchSuggestions(value)
+  }
   
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -60,10 +91,22 @@ const HomePage = () => {
         </div>
         {/* Search bar */}
         <div className="w-[50vw] h-[10vh] flex rounded-lg border-4  border-black ">
-            <input type="text" placeholder="Type Anything" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} className="bg-[#ffecd4] w-full text-2xl placeholder-black placeholder:text-2xl p-3 focus:outline-none" />
+            <input type="text" placeholder="Type Anything" value={query} onChange={handleInputChange} onKeyDown={handleKeyDown} className="bg-[#ffecd4] w-full text-2xl placeholder-black placeholder:text-2xl p-3 focus:outline-none" />
             <span onClick={ handleSearch} className="flex p-5 border-l-4 border-black items-center hover:shadow-2xl transition hover:cursor-pointer"><Search/>
             </span>
         </div>
+
+        {/* Suggestions */}
+        {suggestions.length > 0 && query.trim() && (
+            <div style={{top:'5%'}} className="w-[51vw] p-2 absolute z-50 overflow-y-auto bg-white rounded-lg shadow-lg ">
+              {suggestions.map((suggestion, index) => (
+                <div key={index} className="p-2 hover:bg-gray-100 cursor-pointer" onClick={() => handleSuggestionClick(suggestion)}>
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+          )}
+
         {loading && (
         <div className="flex justify-center items-center ">
           <MoonLoader color="#000"  size={50} />
