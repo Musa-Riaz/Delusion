@@ -4,19 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from math import ceil
 import uvicorn
 from pydantic import BaseModel
-import file_handling as fh
-from fastapi import Query
-import search_util
+from file_handling import load_lexicon
+from search_util import get_results
 
-def convert_to_json(doc):
-    doc_dict = {}
-    doc_dict['title'] = doc[1]
-    doc_dict['url'] = doc[2]
-    doc_dict['description'] = 'THIS IS DESCRIPTION HEHE'
-    doc_dict['imageUrl'] = 'https://creatorset.com/cdn/shop/files/Screenshot_2024-04-24_173231_1114x.png?v=1713973029'
-    doc_dict['tags'] = doc[4]
-    doc_dict['timeStamps'] = ['now']
-    return doc_dict
+NUM_RESULTS = 8
+lexicon = load_lexicon(f'indexes/lexicon.csv')
 
 app = FastAPI()
 
@@ -31,7 +23,6 @@ app.add_middleware(
 
 class QueryData(BaseModel):
     query: str
-
 
 @app.post("/data")
 async def post_data(request : QueryData, page: int = 1, limit: int = 8):
@@ -61,6 +52,5 @@ async def get_suggestions(query: str = Query(..., min_length=1, description="Sea
     except Exception as e:
          return JSONResponse(content={"error": str(e)}, status_code=500)
    
-
 if __name__ == "__main__":
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
