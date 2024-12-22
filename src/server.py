@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from math import ceil
 import uvicorn
 from pydantic import BaseModel
+import file_handling as fh
+from fastapi import Query
 import search_util
 
 def convert_to_json(doc):
@@ -12,7 +15,7 @@ def convert_to_json(doc):
     doc_dict['description'] = 'THIS IS DESCRIPTION HEHE'
     doc_dict['imageUrl'] = 'https://creatorset.com/cdn/shop/files/Screenshot_2024-04-24_173231_1114x.png?v=1713973029'
     doc_dict['tags'] = doc[4]
-    doc_dict['timeStamps'] = ['now', 'then']
+    doc_dict['timeStamps'] = ['now']
     return doc_dict
 
 app = FastAPI()
@@ -29,18 +32,35 @@ app.add_middleware(
 class QueryData(BaseModel):
     query: str
 
-NUM_RESULTS = 8
+
 @app.post("/data")
-async def post_data(request : QueryData):
+async def post_data(request : QueryData, page: int = 1, limit: int = 8):
     query = request.query
     docs = search_util.get_word_docs(query)
-    results = []
-    if docs:
-        for i in range(min(NUM_RESULTS, len(docs))):
-            this_doc = search_util.get_doc_info(docs[i][0])
-            results.append(convert_to_json(this_doc))
+    total_results = len(docs)
+    start_index = (page - 1)* limit #eg if page is 1 then 0*8 = 0
+    end_index = start_index + limit # similarly 0 + 8 = 8
+    paginated_docs = docs[start_index:end_index] #so give us pages in the range of 0 to 8
+    results = [convert_to_json(search_util.get_doc_info(doc[0])) for doc in paginated_docs]
+    
+    return JSONResponse({"success": True,
+                          "data": results,
+                          "totalResults": total_results, #total number of results
+                          "totalPages": ceil(total_results/limit), #will need this for my pagination
+                          "page": page,
+                          "limit": limit,#this is the limit, i.e the number of results per page
+                          })
 
-    return JSONResponse({"message": "success", "success": True, "data": results})
+@app.get("/suggestions")
+async def get_suggestions(query: str = Query(..., min_length=1, description="Search query"), limit: int = 10):
+    try:
+        lexicon = fh.load_lexicon('indexes/lexicon.csv')
+        suggestions = [word for word in lexicon.keys() if word.lower().startswith(query.lower())]
+
+        return JSONResponse(content={"suggestions":suggestions[:limit]})
+    except Exception as e:
+         return JSONResponse(content={"error": str(e)}, status_code=500)
+   
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
