@@ -26,6 +26,7 @@ const HomePage = () => {
       });
       setLoading(false);
       if(status == 200){
+        setPage(1); // Reset page to 1 for a new search
         dispatch(setResultData(data.data));
         dispatch(setEndLink(data.totalPages))
       }
@@ -39,12 +40,13 @@ const HomePage = () => {
   };
 
   const fetchSuggestions = async (value) => {
+    console.log(value);
     if (!value.trim()) {
       setSuggestions([]); // Clear suggestions if the query is empty
       return;
     }
     try{
-      const res = await axios.get(`http://localhost:8000/suggestions?query=${query}`);
+      const res = await axios.get(`http://localhost:8000/suggestions?query=${value}`);
       console.log(res.data);
       setSuggestions(res.data.suggestions);
     }
@@ -63,8 +65,8 @@ const HomePage = () => {
   
   const handleInputChange = (e) => {
     const value = e.target.value;
-    setQuery(value);
     fetchSuggestions(value)
+    setQuery(value);
   }
   
   const handleKeyDown = (e) => {

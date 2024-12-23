@@ -38,7 +38,7 @@ const ResultsPage = () => {
         query, 
       });
       if(status == 200){
-        
+        setPage(1); // Reset page to 1 for a new search
         dispatch(setResultData(data.data));
         dispatch(setEndLink(data.totalPages)) //this state will be used to set the last page of the pagination
       } 
@@ -56,7 +56,7 @@ const ResultsPage = () => {
       return;
     }
     try{
-      const res = await axios.get(`http://localhost:8000/suggestions?query=${query}`);
+      const res = await axios.get(`http://localhost:8000/suggestions?query=${value}`);
       console.log(res.data);
       setSuggestions(res.data.suggestions);
     }
@@ -74,8 +74,8 @@ const ResultsPage = () => {
 
   const handleInputChange = (e) => {
     const value = e.target.value;
-    setQuery(value);
     fetchSuggestions(value)
+    setQuery(value);
   }
 
   const handlePageChange = (newPage) => {
@@ -131,13 +131,14 @@ const ResultsPage = () => {
       </div>
 
       {/* Search Results Section */}
-      <div className="flex flex-wrap justify-between p-5">
+      <div className="flex flex-wrap justify-center p-5">
         {loading ? (
-          <div className="flex justify-center items-center w-full h-full">
+          <div className="flex justify-center  items-center w-full h-full">
             <MoonLoader color="#000" size={60} />
           </div> // Show loading text while fetching results
         ) : results.length > 0 ? (
           results.map((data, index) => (
+            
             <ResultCards
               key={index}
               title={data.title}
@@ -147,6 +148,7 @@ const ResultsPage = () => {
               tags={data.tags}
               timeStamps={data.timeStamps}
               data={data}
+              
             />
           ))
         ) : (
