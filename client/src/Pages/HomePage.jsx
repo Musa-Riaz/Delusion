@@ -26,7 +26,6 @@ const HomePage = () => {
       });
       setLoading(false);
       if(status == 200){
-        setPage(1); // Reset page to 1 for a new search
         dispatch(setResultData(data.data));
         dispatch(setEndLink(data.totalPages))
       }
