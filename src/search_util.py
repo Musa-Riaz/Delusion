@@ -67,6 +67,7 @@ def convert_to_json(doc, score):
     doc_dict['imageUrl'] = r'https://www.meme-arsenal.com/memes/5d2155364664354f74ceec5ecd9e6e8c.jpg'
     doc_dict['tags'] = doc[4]
     doc_dict['timeStamps'] = ['now']
+    doc_dict['authors'] = doc[3]
     return doc_dict
 
 def get_results(query, lexicon, start, end):

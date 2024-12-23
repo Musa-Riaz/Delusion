@@ -14,7 +14,10 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {}
-  	}
+  	},
+    fontFamily: {
+      'myFont1': ["My Font", 'serif'],
+    }
   },
   plugins: [require("tailwindcss-animate"), require('@tailwindcss/line-clamp')],
 }
