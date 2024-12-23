@@ -29,6 +29,7 @@ const ResultsPage = () => {
   const [query, setQuery] = useState(location?.state?.query); //intializing its value as the query passed from the home page
   const [loading, setLoading] = useState(false); // Loading state
   const [suggestions, setSuggestions] = useState([]); // Suggestions state
+  const [selectedIndex, setSelectedIndex] = useState(-1)
 
   const handleSearch = async (newPage = page) => {
     setLoading(true);
@@ -74,9 +75,11 @@ const ResultsPage = () => {
   const handleInputChange = (e) => {
     const value = e.target.value;
     fetchSuggestions(value)
+    setSelectedIndex(-1)
     setQuery(value);
   }
 
+  
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= endLink){
     setPage(newPage);
@@ -86,6 +89,19 @@ const ResultsPage = () => {
   };
 
   const handleKeyDown = (e) => {
+    if (suggestions.length > 0) {
+      if (e.key === "ArrowDown" ) {
+        setSelectedIndex((prevIndex) => Math.min(prevIndex + 1, suggestions.length - 1));
+      } else if (e.key === "ArrowUp") {
+        setSelectedIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+      } else if (e.key === "Tab") {
+        e.preventDefault(); // Prevent default tab behavior
+        if (selectedIndex >= 0) {
+          setQuery(suggestions[selectedIndex]);
+          setSuggestions([]); // Clear suggestions after selection
+        }
+      }
+    }
     if (e.key === "Enter") {
       setPage(1);//reset the page to 1 whenever a new search is made
       handleSearch();
@@ -109,7 +125,10 @@ const ResultsPage = () => {
             className="bg-[#ffecd4] w-full text-xl placeholder-black placeholder:text-xl p-3 focus:outline-none"
           />
           <span
-            onClick={handleSearch} // Trigger search on click
+            onClick={() => {
+              setPage(1) //setting the page as 1 because the page number was being sent as an object 
+              handleSearch(); // Trigger search on click
+            }} 
             className="flex p-5 border-l-4 border-black items-center hover:shadow-2xl transition hover:cursor-pointer"
           >
             <Search />
@@ -120,7 +139,7 @@ const ResultsPage = () => {
           {suggestions.length > 0 && query.trim() && (
             <div style={{ top: '19%' }} className="absolute z-50 overflow-y-auto border p-2 w-[40vw] bg-white rounded-lg shadow-lg ">
               {suggestions.map((suggestion, index) => (
-                <div key={index} className="p-2 hover:bg-gray-100 cursor-pointer" onClick={() => handleSuggestionClick(suggestion)}>
+                <div key={index} className={`p-2 hover:bg-gray-100 cursor-pointer ${index === selectedIndex ? "bg-gray-300" : ""}`} onClick={() => handleSuggestionClick(suggestion)}>
                   {suggestion}
                 </div>
               ))}
