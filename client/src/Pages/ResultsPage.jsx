@@ -145,7 +145,7 @@ const ResultsPage = () => {
               ))}
             </div>
           )}
-        <h1 className="text-5xl font-semibold">Results</h1>
+        <h1 className="text-5xl font-semibold font-myFont1">The Top Search Results Are...</h1>
       </div>
 
       {/* Search Results Section */}
@@ -156,7 +156,6 @@ const ResultsPage = () => {
           </div> // Show loading text while fetching results
         ) : results.length > 0 ? (
           results.map((data, index) => (
-            
             <ResultCards
               key={index}
               title={data.title}
