@@ -1,6 +1,7 @@
-import csv
-import json
+from io import StringIO
 import struct
+import json
+import csv
 
 def load_ids(ids_file):
     try:
@@ -95,3 +96,21 @@ def create_document_offsets(documents_file):
             current_offset = file.tell()
     
     return offsets
+
+# reads a row based on offsets
+def read_with_offset(row_num, file_name):
+    with open(file_name + '.bin', 'rb') as file:
+        file.seek(row_num * 4)
+        data = file.read(8)
+        pos = struct.unpack('I', data[0:4])[0]
+        next_pos = struct.unpack('I', data[4:8])[0]
+    
+    with open(file_name + '.csv', 'rb') as file:
+        file.seek(pos)
+        data = file.read(next_pos - pos).decode()
+        # the csv row is obtained as a string
+        # read it using a csv reader to get it in a usable format
+        string_file = StringIO(data)
+        reader = csv.reader(string_file)
+        data = next(reader)
+        return data
