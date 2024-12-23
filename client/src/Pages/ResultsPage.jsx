@@ -29,6 +29,7 @@ const ResultsPage = () => {
   const [query, setQuery] = useState(location?.state?.query); //intializing its value as the query passed from the home page
   const [loading, setLoading] = useState(false); // Loading state
   const [suggestions, setSuggestions] = useState([]); // Suggestions state
+  const [selectedIndex, setSelectedIndex] = useState(-1)
 
   const handleSearch = async (newPage = page) => {
     setLoading(true);
@@ -38,7 +39,6 @@ const ResultsPage = () => {
         query, 
       });
       if(status == 200){
-        
         dispatch(setResultData(data.data));
         dispatch(setEndLink(data.totalPages)) //this state will be used to set the last page of the pagination
       } 
@@ -56,7 +56,7 @@ const ResultsPage = () => {
       return;
     }
     try{
-      const res = await axios.get(`http://localhost:8000/suggestions?query=${query}`);
+      const res = await axios.get(`http://localhost:8000/suggestions?query=${value}`);
       console.log(res.data);
       setSuggestions(res.data.suggestions);
     }
@@ -74,10 +74,12 @@ const ResultsPage = () => {
 
   const handleInputChange = (e) => {
     const value = e.target.value;
-    setQuery(value);
     fetchSuggestions(value)
+    setSelectedIndex(-1)
+    setQuery(value);
   }
 
+  
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= endLink){
     setPage(newPage);
@@ -87,6 +89,19 @@ const ResultsPage = () => {
   };
 
   const handleKeyDown = (e) => {
+    if (suggestions.length > 0) {
+      if (e.key === "ArrowDown" ) {
+        setSelectedIndex((prevIndex) => Math.min(prevIndex + 1, suggestions.length - 1));
+      } else if (e.key === "ArrowUp") {
+        setSelectedIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+      } else if (e.key === "Tab") {
+        e.preventDefault(); // Prevent default tab behavior
+        if (selectedIndex >= 0) {
+          setQuery(suggestions[selectedIndex]);
+          setSuggestions([]); // Clear suggestions after selection
+        }
+      }
+    }
     if (e.key === "Enter") {
       setPage(1);//reset the page to 1 whenever a new search is made
       handleSearch();
@@ -110,7 +125,10 @@ const ResultsPage = () => {
             className="bg-[#ffecd4] w-full text-xl placeholder-black placeholder:text-xl p-3 focus:outline-none"
           />
           <span
-            onClick={handleSearch} // Trigger search on click
+            onClick={() => {
+              setPage(1) //setting the page as 1 because the page number was being sent as an object 
+              handleSearch(); // Trigger search on click
+            }} 
             className="flex p-5 border-l-4 border-black items-center hover:shadow-2xl transition hover:cursor-pointer"
           >
             <Search />
@@ -121,19 +139,19 @@ const ResultsPage = () => {
           {suggestions.length > 0 && query.trim() && (
             <div style={{ top: '19%' }} className="absolute z-50 overflow-y-auto border p-2 w-[40vw] bg-white rounded-lg shadow-lg ">
               {suggestions.map((suggestion, index) => (
-                <div key={index} className="p-2 hover:bg-gray-100 cursor-pointer" onClick={() => handleSuggestionClick(suggestion)}>
+                <div key={index} className={`p-2 hover:bg-gray-100 cursor-pointer ${index === selectedIndex ? "bg-gray-300" : ""}`} onClick={() => handleSuggestionClick(suggestion)}>
                   {suggestion}
                 </div>
               ))}
             </div>
           )}
-        <h1 className="text-5xl font-semibold">Results</h1>
+        <h1 className="text-5xl font-semibold font-myFont1">The Top Search Results Are...</h1>
       </div>
 
       {/* Search Results Section */}
-      <div className="flex flex-wrap justify-between p-5">
+      <div className="flex flex-wrap justify-center p-5">
         {loading ? (
-          <div className="flex justify-center items-center w-full h-full">
+          <div className="flex justify-center  items-center w-full h-full">
             <MoonLoader color="#000" size={60} />
           </div> // Show loading text while fetching results
         ) : results.length > 0 ? (
@@ -146,7 +164,9 @@ const ResultsPage = () => {
               imageUrl={data?.imageUrl}
               tags={data.tags}
               timeStamps={data.timeStamps}
+              authors={data.authors}
               data={data}
+              
             />
           ))
         ) : (
@@ -159,58 +179,102 @@ const ResultsPage = () => {
 
       {/* Pagination */}
       {results.length > 0 && (
-        <div className="p-8 flex justify-center items-center border-black ">
-        <Pagination>
-          <PaginationContent>
-            {page !== 1 ? (
-                          <PaginationItem >
-                          <PaginationPrevious className="hover:cursor-pointer" onClick={() => handlePageChange(page -1)}/>
-                        </PaginationItem>
-            ) : null}
-            <PaginationItem>
-              <PaginationLink
-                className="hover:cursor-pointer"
-                onClick={() => {handlePageChange(page=1)}}
-                isActive={page === 1}
-              >
-                1
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink
-                className="hover:cursor-pointer"
-                onClick={() => handlePageChange(page=2)}
-                isActive={page === 2}
-              >
-                2
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink
-                className="hover:cursor-pointer"
-                onClick={() => handlePageChange(page=3)}
-                isActive={page === 3}
-              >
-                3
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink  className="hover:cursor-pointer" onClick={() => handlePageChange(page=endLink)} isActive={page === endLink}>
-                {endLink}
-              </PaginationLink>
-            </PaginationItem>
-            {page !== endLink ? (
-              <PaginationItem>
-              <PaginationNext className="hover:cursor-pointer"  onClick={() => handlePageChange(page+1)} />
-            </PaginationItem>
-            ) : null}
-          </PaginationContent>
-        </Pagination>
-      </div>
-      )}
+  <div className="p-8 flex justify-center items-center border-black">
+    <Pagination>
+      <PaginationContent>
+        {/* Previous Button */}
+        <PaginationItem>
+          <PaginationPrevious
+            className={`hover:cursor-pointer ${page === 1 ? 'opacity-50 pointer-events-none' : ''}`}
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+          />
+        </PaginationItem>
+
+        {/* Page Numbers */}
+        {(() => {
+          const pagesToShow = 5; // Number of pages to show around the current page
+          const pageNumbers = [];
+          let startPage = Math.max(1, page - Math.floor(pagesToShow / 2));
+          let endPage = Math.min(endLink, startPage + pagesToShow - 1);
+
+          if (endPage - startPage < pagesToShow - 1) {
+            startPage = Math.max(1, endPage - pagesToShow + 1);
+          }
+
+          if (startPage > 1) {
+            pageNumbers.push(
+              <PaginationItem key={1}>
+                <PaginationLink
+                className='hover:cursor-pointer'
+                  onClick={() => handlePageChange(1)}
+                  isActive={page === 1}
+                >
+                  1
+                </PaginationLink>
+              </PaginationItem>
+            );
+
+            if (startPage > 2) {
+              pageNumbers.push(
+                <PaginationItem key="start-ellipsis">
+                  <PaginationEllipsis />
+                </PaginationItem>
+              );
+            }
+          }
+
+          for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(
+              <PaginationItem key={i}>
+                <PaginationLink
+                className='hover:cursor-pointer'
+                  onClick={() => handlePageChange(i)}
+                  isActive={page === i}
+                >
+                  {i}
+                </PaginationLink>
+              </PaginationItem>
+            );
+          }
+
+          if (endPage < endLink) {
+            if (endPage < endLink - 1) {
+              pageNumbers.push(
+                <PaginationItem key="end-ellipsis">
+                  <PaginationEllipsis />
+                </PaginationItem>
+              );
+            }
+
+            pageNumbers.push(
+              <PaginationItem key={endLink}>
+                <PaginationLink
+                className='hover:cursor-pointer'
+                  onClick={() => handlePageChange(endLink)}
+                  isActive={page === endLink}
+                >
+                  {endLink}
+                </PaginationLink>
+              </PaginationItem>
+            );
+          }
+
+          return pageNumbers;
+        })()}
+
+        {/* Next Button */}
+        <PaginationItem>
+          <PaginationNext
+            className={`hover:cursor-pointer ${page === endLink ? 'opacity-50 pointer-events-none' : ''}`}
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === endLink}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  </div>
+)}
       
     </div>
   );
