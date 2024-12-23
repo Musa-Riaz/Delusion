@@ -1,12 +1,15 @@
 # contains word processing functions
 from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from num2words import num2words
 from nltk import pos_tag
 import string
 import regex as re
 
 lemmatizer = WordNetLemmatizer()
+# initializing
+lemmatizer.lemmatize('apple')
 # set of common words not considered by the search engine
 try:
     stop_words = set(stopwords.words('english'))
@@ -15,9 +18,8 @@ except LookupError:
 
 # tags words in text based off part-of-speech
 def tag_text(text):
-    pattern = r'[^A-Za-z0-9 ]+'
     # replace any non alphanumeric characters with space
-    text = re.sub(pattern, ' ', text)
+    text = re.sub(r'[^A-Za-z0-9 ]+', ' ', text)
     text = text.lower()
     text = text.encode('ascii', 'ignore').decode('ascii')   # removing non-ascii characters
     try:
@@ -54,3 +56,34 @@ def process_word(word, tag):
         return word
     
     return processed
+
+# a query cannot be tagged accurately, so it is processed with this function
+def process_query(query):
+    query = re.sub(r'[^A-Za-z0-9 ]+', ' ', query)
+    query = query.lower()
+    query = query.encode('ascii', 'ignore').decode('ascii') 
+
+    processed = {}
+    for word in word_tokenize(query):
+        if word in stop_words or len(word) == 1:
+            continue
+        
+        # for some simple improvements, such as including results for 'nine' when 9 searched
+        # ideally, the lemmatization initially should have done this
+        if word.isdigit():
+            processed[word] = None
+            processed[num2words(int(word))] = None
+            continue
+
+        processed_word = lemmatizer.lemmatize(word, pos='n')
+        if processed_word == word:
+            processed_word = lemmatizer.lemmatize(word, pos='v')
+            if processed_word == word:
+                processed_word = lemmatizer.lemmatize(word, pos='a')
+                if processed_word == word:
+                    processed_word = lemmatizer.lemmatize(word)
+
+        if len(processed_word) <= 1:
+            processed[word] = None
+        processed[processed_word] = None
+    return list(processed.keys())
