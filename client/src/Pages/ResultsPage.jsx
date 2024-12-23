@@ -167,7 +167,9 @@ const ResultsPage = () => {
                           <PaginationPrevious className="hover:cursor-pointer" onClick={() => handlePageChange(page -1)}/>
                         </PaginationItem>
             ) : null}
-            <PaginationItem>
+            {endLink > 3 && (
+              <>
+              <PaginationItem>
               <PaginationLink
                 className="hover:cursor-pointer"
                 onClick={() => {handlePageChange(page=1)}}
@@ -197,6 +199,8 @@ const ResultsPage = () => {
             <PaginationItem>
               <PaginationEllipsis />
             </PaginationItem>
+            </>
+            )}
             <PaginationItem>
               <PaginationLink  className="hover:cursor-pointer" onClick={() => handlePageChange(page=endLink)} isActive={page === endLink}>
                 {endLink}
