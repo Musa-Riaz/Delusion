@@ -19,7 +19,7 @@ def rank_docs(docs, intersections):
         doc_id = doc[0]
         hit_list = doc[1]
 
-        this_score = min(len(hit_list), 50)   # TEXT hits, capped at 50 arbitrarily, having 50 or 100 hits does not increase relevancy much
+        this_score = min(len(hit_list), 20)   # TEXT hits, capped at 50 arbitrarily, having 50 or 100 hits does not increase relevancy much
 
         multiplier = intersection_multiplier(doc, intersections)
         this_score = this_score if multiplier == 1 else this_score + 10
@@ -70,6 +70,29 @@ def rank_docs(docs, intersections):
 
     return top_docs
 
+def intersect(doc_lists):
+    if len(doc_lists) <= 1:
+        return []
+    
+    doc_lists = [{doc[0] : is_relevant(doc[1]) for doc in doc_list} for doc_list in doc_lists]
+    intersections = [doc_lists[0]]
+    
+    for i in range(1, len(doc_lists)):
+        this_intersection = {}
+        for doc_id in doc_lists[i]:
+            if doc_id in intersections[i - 1]:
+                if doc_lists[i][doc_id] and intersections[i - 1][doc_id]:
+                    this_intersection[doc_id] = True
+                else:
+                    this_intersection[doc_id] = False
+        intersections.append(this_intersection)
+    return intersections
+        
+# a hit list is considered relevant if it contains any hits other than text
+def is_relevant(hit_list):
+    # hit lists store hits in order title, text, url, author, tags
+    # so only the first and last hits can be relevant
+    return hit_list[0] % 10 != 1 or hit_list[-1] % 10 != 1
 
 def intersection_multiplier(doc, intersections):
     # for multi-word queries, intersections contains cuwemulative intersections of all the words

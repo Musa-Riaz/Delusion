@@ -16,6 +16,7 @@ TITLE = 0
 TEXT = 1
 URL = 2
 AUTHORS = 3
+TIMESTAMP = 4
 TAGS = 5
 
 os.makedirs('indexes/forward_index', exist_ok=True)
@@ -71,7 +72,7 @@ try:
 
         new_urls.add(this_hash)
         print(f"Indexing {this_hash}...")
-        processed_docs.append([next_doc_id, article[TITLE], article[URL], article[AUTHORS], article[TAGS]])
+        processed_docs.append([next_doc_id, article[TITLE], article[URL], article[AUTHORS], article[TAGS], article[TIMESTAMP]])
         indexed += 1
 
         # these entries will contain an entry for this document in each barrel
