@@ -47,6 +47,7 @@ const HomePage = () => {
     console.log(value);
     if (!value.trim()) {
       setSuggestions([]); // Clear suggestions if the query is empty
+      setSelectedIndex(-1);
       return;
     }
     try {
@@ -55,6 +56,7 @@ const HomePage = () => {
       );
       console.log(res.data);
       setSuggestions(res.data.suggestions);
+      setSelectedIndex(res.data.suggestions.length > 0 ? 0 : -1)
     } catch (err) {
       console.log(err);
     }

@@ -31,7 +31,7 @@ const ResultCards = ({
             <div className="w-full h-32 border rounded-lg mb-4">
               <img
                 src={imageUrl}
-                alt="Card graphic"
+                alt="Image Not Available"
                 className="w-full h-full object-cover"
               />
             </div>

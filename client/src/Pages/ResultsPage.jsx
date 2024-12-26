@@ -31,8 +31,9 @@ const ResultsPage = () => {
   const [suggestions, setSuggestions] = useState([]); // Suggestions state
   const [selectedIndex, setSelectedIndex] = useState(-1)
 
-  const handleSearch = async (newPage = page) => {
+  const handleSearch = async (newPage = 1) => {
     setLoading(true);
+    setPage(newPage); // Set page number
     setSuggestions([]); // Clear suggestions after search
     try {
       const {data, status} = await axios.post(`http://localhost:8000/data?page=${newPage}`, { //will pass the page as a query parameter
@@ -53,12 +54,14 @@ const ResultsPage = () => {
   const fetchSuggestions = async (value) => {
     if (!value.trim()) {
       setSuggestions([]); // Clear suggestions if the query is empty
+      setSelectedIndex(-1)
       return;
     }
     try{
       const res = await axios.get(`http://localhost:8000/suggestions?query=${value}`);
       console.log(res.data);
       setSuggestions(res.data.suggestions);
+      setSelectedIndex(res.data.suggestions.length > 0 ? 0 : -1)
     }
     catch(err){
       console.log(err);
@@ -104,6 +107,7 @@ const ResultsPage = () => {
     }
     if (e.key === "Enter") {
       setPage(1);//reset the page to 1 whenever a new search is made
+      
       handleSearch();
     }
   };
