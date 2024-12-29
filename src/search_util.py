@@ -59,7 +59,10 @@ def get_processed_data(doc_id, processed_info):
     processed_info.append(data)
 
 def get_scraped_data(doc_id, scraped_info):
-    data = fh.read_with_offset(doc_id, 'indexes/scraped')
+    try:
+        data = fh.read_with_offset(doc_id, 'indexes/scraped')
+    except:
+        scraped_info.append(['', ''])
     scraped_info.append(data)
 
 def convert_to_json(doc):

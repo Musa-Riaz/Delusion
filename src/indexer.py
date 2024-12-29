@@ -103,7 +103,9 @@ def write_forward_entries(forward_index_entries, processed_docs, forward_index_f
             # barrels are name as n.csv where n is the barrel number
             fh.write_to_csv(forward_index_folder + f'/{i}.csv', forward_index_entries[i], 'a')
 
-def index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file):
+
+# indexes a csv dataset, which can be provided as a list or a file path
+def index_csv_dataset(dataset, lexicon_file, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file, is_file=True):
     os.makedirs('indexes/forward_index', exist_ok=True)
 
     global next_word_id, next_doc_id
@@ -116,9 +118,12 @@ def index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder
     forward_index_entries = []
     processed_docs = []
 
-    with open(dataset_file, encoding='utf-8') as file:
-        dataset = csv.reader(file)
-        next(dataset)    # skip headings row
+    try:
+        file = None
+        if is_file:
+            file = open(dataset, encoding='utf-8')
+            dataset = csv.reader(file)
+            next(dataset)    # skip headings row
         
         for article in dataset:
             index_article(article, indexed_urls, lexicon, lexicon_entries, forward_index_entries, new_urls, processed_docs)
@@ -132,6 +137,11 @@ def index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder
 
         # write last entries to forward index barrels
         write_forward_entries(forward_index_entries, processed_docs, forward_index_folder, processed_docs_file)
+    except IOError:
+        print(f"Couldn't open {dataset_file}")
+    finally:
+        if file:
+            file.close()
 
     fh.write_to_csv(lexicon_file, lexicon_entries, 'a')
 
@@ -149,6 +159,9 @@ def index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder
         file.write('\n'.join(new_urls) + '\n')
 
     print(f"\nDone! Indexed up to doc_id {next_doc_id}.")
+
+def json_to_csv(json):
+    return [json['title'], json['text'], json['url'], json['authors'], json['timestamp'], json['tags']]
     
 dataset_file = '30_articles.csv'
 lexicon_file = 'indexes/lexicon.csv'
