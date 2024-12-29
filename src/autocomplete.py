@@ -1,4 +1,4 @@
-from file_handling import load_frequencies
+from file_handling import load_binary_data
 from sortedcontainers import SortedList
 from random import choice
 import file_handling
@@ -53,7 +53,7 @@ class Trie:
 
 def create_autocomplete_trie(num_words, lexicon):
     trie = Trie()
-    frequencies = load_frequencies('indexes/frequencies.bin')
+    frequencies = load_binary_data('indexes/frequencies.bin', 4)
     for word in lexicon:
         word_id = lexicon[word]
         if word_id > num_words:

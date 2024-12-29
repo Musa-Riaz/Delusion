@@ -1,4 +1,3 @@
-from io import StringIO
 import word_processing as wp
 import file_handling as fh
 import threading as th
@@ -6,7 +5,6 @@ import ranking as rk
 import struct
 import json
 import ast
-import csv
 
 # given a word, returns its inverted index entries
 def get_word_docs(word, lexicon, results):
