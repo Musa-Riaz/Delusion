@@ -1,4 +1,3 @@
-from io import StringIO
 import word_processing as wp
 import file_handling as fh
 import threading as th
@@ -6,7 +5,6 @@ import ranking as rk
 import struct
 import json
 import ast
-import csv
 
 # given a word, returns its inverted index entries
 def get_word_docs(word, lexicon, results):
@@ -61,7 +59,10 @@ def get_processed_data(doc_id, processed_info):
     processed_info.append(data)
 
 def get_scraped_data(doc_id, scraped_info):
-    data = fh.read_with_offset(doc_id, 'indexes/scraped')
+    try:
+        data = fh.read_with_offset(doc_id, 'indexes/scraped')
+    except:
+        scraped_info.append(['', ''])
     scraped_info.append(data)
 
 def convert_to_json(doc):
