@@ -20,7 +20,6 @@ import {
 import { useNavigate } from "react-router";
 import { setEndLink } from "@/redux/slices/resultSlice";
 import { Upload } from "antd";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +38,7 @@ const ResultsPage = () => {
   const location = useLocation();
   let [page, setPage] = useState(1); // Pagination page number
   const [fileData, setFileData] = useState();
-  const [articleJson, setArticleJson] = useState();
+  const [articleUrl, setArticleUrl] = useState();
   const [files, setFiles] = useState([]);
   const navigate = useNavigate();
   const { results } = useSelector((state) => state.result);
@@ -163,17 +162,12 @@ const ResultsPage = () => {
           variant: "destructive",
         });
       }
-    } else if (articleJson) {
+    } else if (articleUrl) {
       try {
         setArticleLoading(true);
         const res = await axios.post(
-          "http://localhost:8000/upload",
-          { article: JSON.parse(articleJson) },
-          {
-            headers: {
-              "Content-Type": "application/json", // Ensure JSON content type
-            },
-          }
+          "http://localhost:8000/upload/url",
+          {query:articleUrl} 
         );
         setArticleLoading(false);
         if (res.status == 200) {
@@ -182,14 +176,14 @@ const ResultsPage = () => {
             description: "Article uploaded successfully",
             variant: "default",
           });
-          setArticleJson("");
+          setArticleUrl("");
         }
       } catch (err) {
         setArticleLoading(false);
         console.log(err);
         toast({
           title: "Error",
-          description: "Wrong JSON format. Input a valid JSON",
+          description: "Wrong URL Format",
           variant: "destructive",
         });
       }
@@ -245,11 +239,11 @@ const ResultsPage = () => {
             <Search />
           </span>
           <span className="flex p-5 border-l-4 bg-black  border-black items-center hover:shadow-2xl transition hover:cursor-pointer">
-            <Dialog className="border">
+            <Dialog className="border ">
               <DialogTrigger>
                 <Plus className="text-white" />
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="bg-[#ffecd4]">
                 {articleLoading ? (
                   <div className="flex justify-center items-center w-full h-full">
                     <MoonLoader />
@@ -257,9 +251,9 @@ const ResultsPage = () => {
                 ) : (
                   <>
                     <DialogTitle>Upload Your File Here</DialogTitle>
-                    <form onSubmit={handleArticleSubmission}>
-                      <div className="flex flex-col justify-center items-center gap-5">
-                        <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 hover:border-gray-400">
+                    <form onSubmit={handleArticleSubmission} >
+                      <div className="flex flex-col justify-center items-center gap-5 ">
+                        <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-gray-600 rounded-lg bg-[#ffecd4] hover:border-gray-800">
                           <label
                             htmlFor="file-input"
                             className="flex flex-col items-center cursor-pointer"
@@ -275,7 +269,7 @@ const ResultsPage = () => {
                             id="file-input"
                             type="file"
                             accept=".json"
-                            className="hidden"
+                            className="hidden "
                             onChange={(e) => {
                               handleFileChange(e);
                               setFiles([e.target.files[0]]);
@@ -295,10 +289,12 @@ const ResultsPage = () => {
                           )}
                         </div>
                         OR
-                        <Textarea
-                          placeholder="Type the JSON here"
-                          value={articleJson}
-                          onChange={(e) => setArticleJson(e.target.value)}
+                        <Input
+                          type='url'
+                          placeholder="Enter your link here"
+                          value={articleUrl}
+                          onChange={(e) => setArticleUrl(e.target.value)}
+                          className="bg-[#ffecd4] border border-black"
                         />
                       </div>
                       <div className="mt-3 flex justify-end">

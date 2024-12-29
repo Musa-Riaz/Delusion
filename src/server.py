@@ -32,6 +32,7 @@ app.add_middleware(
 
 class QueryData(BaseModel):
     query: str
+  
 
 @app.post("/data")
 async def post_data(request : QueryData, page: int = 1, limit: int = 8):
@@ -46,6 +47,15 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8):
                           "totalPages": ceil(total_results / limit),  #will need this for my pagination
                           "page": page,
                           "limit": limit,   #this is the limit, i.e the number of results per page
+                          })
+
+@app.post("/upload/url")
+async def upload_url(request: QueryData):
+    url = request.query
+
+    return JSONResponse({"success": True,
+                         "message":"Article uploaded successfully",
+                          "url": url
                           })
 
 @app.post("/upload")

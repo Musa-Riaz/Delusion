@@ -98,7 +98,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="bg-[#ffecd4]">
+    <div className="bg-[#ffecd4] ">
       <div className="flex flex-col w-full md:flex-col gap-6 justify-center items-center flex-grow h-screen">
         {/* Graphics */}
         <div className="flex items-center gap-12">
@@ -132,12 +132,11 @@ const HomePage = () => {
             <Search />
           </span>
         </div>
-
         {/* Suggestions */}
         {suggestions.length > 0 && query.trim() && (
           <div
-            style={{ top: "12%" }}
-            className="w-[51vw] p-2 absolute z-50 overflow-y-auto bg-white rounded-lg shadow-lg "
+            style={{ bottom: "3%" }}
+            className="w-[51vw] mt-2 p-2 relative z-50  bg-white rounded-lg shadow-lg "
           >
             {suggestions.map((suggestion, index) => (
               <div
