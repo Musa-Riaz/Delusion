@@ -324,7 +324,7 @@ const ResultsPage = () => {
         {/* Suggestions */}
         {suggestions.length > 0 && query.trim() && (
           <div
-            style={{ top: "19%" }}
+            style={{ top: "22%" }}
             className="absolute z-50 overflow-y-auto border p-2 w-[40vw] bg-white rounded-lg shadow-lg "
           >
             {suggestions.map((suggestion, index) => (

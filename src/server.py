@@ -4,12 +4,14 @@ from file_handling import load_lexicon
 from search_util import get_results
 from pydantic import BaseModel
 from pydantic import BaseModel
+from typing import Dict, Any
 from fastapi import FastAPI
 from fastapi import Query
 import autocomplete as ac
+import indexer as idxr
 from math import ceil
-from typing import Dict, Any
 import uvicorn
+import sorter
 
 print("Loading lexicon...")
 lexicon = load_lexicon(f'indexes/lexicon.csv')
@@ -61,8 +63,12 @@ async def upload_url(request: QueryData):
 @app.post("/upload")
 async def upload_article( request: ArticleData):
     article_data = request.article
+    csv_data = idxr.json_to_csv(article_data)
+    idxr.index_csv_dataset([csv_data], idxr.lexicon_file, idxr.ids_file, idxr.forward_index_folder, idxr.processed_docs_file, False)
+    sorter.sort_all_barrels()
+    
     return JSONResponse({"success": True,
-                         "message":"Article uploaded successfully",
+                         "message":"Article uploading...",
                           "data": article_data
                           })
 

@@ -83,4 +83,4 @@ def sort_all_barrels():
             print(f"Sorted {barrel_number} barrels.")
             break
         
-sort_all_barrels()
+# sort_all_barrels()

@@ -170,4 +170,4 @@ forward_index_folder = 'indexes/forward_index'
 indexed_urls_file = 'indexes/indexed_urls.txt'  # used to check which URLs have been indexed already
 processed_docs_file = 'indexes/processed'       # used for retrieving document data given doc id
 
-index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file)
+# index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file)
