@@ -136,7 +136,7 @@ const HomePage = () => {
         {/* Suggestions */}
         {suggestions.length > 0 && query.trim() && (
           <div
-            style={{ top: "5%" }}
+            style={{ top: "12%" }}
             className="w-[51vw] p-2 absolute z-50 overflow-y-auto bg-white rounded-lg shadow-lg "
           >
             {suggestions.map((suggestion, index) => (
