@@ -72,7 +72,7 @@ def convert_to_json(doc):
     doc_dict['imageUrl'] = doc[6]
     doc_dict['tags'] = doc[4]
     doc_dict['timeStamps'] = [doc[5][:10]]
-    doc_dict['authors'] = doc[3]
+    doc_dict['authors'] = ', '.join(doc[3])
     return doc_dict
 
 def get_results(query, lexicon, start, end):

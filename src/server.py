@@ -3,10 +3,12 @@ from fastapi.responses import JSONResponse
 from file_handling import load_lexicon
 from search_util import get_results
 from pydantic import BaseModel
+from pydantic import BaseModel
 from fastapi import FastAPI
 from fastapi import Query
 import autocomplete as ac
 from math import ceil
+from typing import Dict, Any
 import uvicorn
 
 print("Loading lexicon...")
@@ -15,6 +17,9 @@ print("Creating autocomplete trie...")
 lexicon_trie = ac.create_autocomplete_trie(100000, lexicon)
 
 app = FastAPI()
+
+class ArticleData(BaseModel):
+     article: Dict[str, Any] #idk what this is but apparently it is necessary if I want to send the data as json object
 
 # Configure CORS
 app.add_middleware(
@@ -27,9 +32,10 @@ app.add_middleware(
 
 class QueryData(BaseModel):
     query: str
+  
 
 @app.post("/data")
-async def post_data(request : QueryData, page: int = 1, limit: int = 8):
+async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_only: bool = False):
     query = request.query
     start_index = (page - 1) * limit
     end_index = start_index + limit
@@ -43,6 +49,24 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8):
                           "limit": limit,   #this is the limit, i.e the number of results per page
                           })
 
+@app.post("/upload/url")
+async def upload_url(request: QueryData):
+    url = request.query
+
+    return JSONResponse({"success": True,
+                         "message":"Article uploaded successfully",
+                          "url": url
+                          })
+
+@app.post("/upload")
+async def upload_article( request: ArticleData):
+    article_data = request.article
+    return JSONResponse({"success": True,
+                         "message":"Article uploaded successfully",
+                          "data": article_data
+                          })
+
+
 @app.get("/suggestions")
 async def get_suggestions(query: str = Query(..., min_length=1, description="Search query"), limit: int = 10):
     try:
@@ -54,6 +78,7 @@ async def get_suggestions(query: str = Query(..., min_length=1, description="Sea
         return JSONResponse(content={"suggestions":suggestions})
     except Exception as e:
          return JSONResponse(content={"error": str(e)}, status_code=500)
-   
+
+
 if __name__ == "__main__":
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
