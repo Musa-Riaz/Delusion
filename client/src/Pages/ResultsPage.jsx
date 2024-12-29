@@ -31,6 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
+import { Label } from "@radix-ui/react-label";
 const ResultsPage = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -48,14 +49,15 @@ const ResultsPage = () => {
   const [articleLoading, setArticleLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]); // Suggestions state
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [addMembersOnly, setAddMembersOnly] = useState(false);
 
-  const handleSearch = async (newPage = 1) => {
+  const handleSearch = async (newPage = 1, members_only=addMembersOnly) => {
     setLoading(true);
     setPage(newPage); // Set page number
     setSuggestions([]); // Clear suggestions after search
     try {
       const { data, status } = await axios.post(
-        `http://localhost:8000/data?page=${newPage}`,
+        `http://localhost:8000/data?page=${newPage}&members_only=${members_only}`,
         {
           //will pass the page as a query parameter
           query,
@@ -109,6 +111,8 @@ const ResultsPage = () => {
       handleSearch(newPage);
     }
   };
+
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]; // Get the selected file
@@ -215,8 +219,16 @@ const ResultsPage = () => {
 
   return (
     <div className="bg-[#ffecd4] min-h-screen">
-      <div className="p-2 flex justify-between">
+      <div className="p-2 flex gap-2 flex-col items-start  ">
         <Button onClick={() => navigate("/")}>Home</Button>
+        <div className="flex gap-2 items-center">
+          <Input
+          type='checkbox'
+          checked={addMembersOnly}
+          onChange={() => setAddMembersOnly(!addMembersOnly)}
+          />
+          <Label>Members Only</Label>
+        </div>
       </div>
       {/* Search Input Section */}
       <div className="flex justify-center items-center flex-col gap-6 p-10">
@@ -307,6 +319,7 @@ const ResultsPage = () => {
             </Dialog>
           </span>
         </div>
+         
 
         {/* Suggestions */}
         {suggestions.length > 0 && query.trim() && (

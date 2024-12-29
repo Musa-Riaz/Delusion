@@ -30,8 +30,7 @@ const ResultCards = ({
           {/* Image */}
             <div className="w-full h-32 border rounded-lg mb-4">
               <img
-                src={imageUrl}
-                alt="Image Not Available"
+                src={imageUrl !== "" ? imageUrl : "https://miro.medium.com/v2/resize:fit:1200/1*oXT1gXRoUxIs8dkDB7wUDQ.png"}
                 className="w-full h-full object-cover"
               />
             </div>

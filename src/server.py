@@ -35,7 +35,7 @@ class QueryData(BaseModel):
   
 
 @app.post("/data")
-async def post_data(request : QueryData, page: int = 1, limit: int = 8):
+async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_only: bool = False):
     query = request.query
     start_index = (page - 1) * limit
     end_index = start_index + limit

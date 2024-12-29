@@ -16,7 +16,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  const handleSearch = async (page = 1) => {
+  const handleSearch = async (page = 1, members_only = false) => {
     setLoading(true);
 
     try {
