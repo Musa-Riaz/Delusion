@@ -51,7 +51,7 @@ const ResultCards = ({
         </CardContent>
         <CardFooter className="p-4  bg-gray-50">
           {/* Tags and Timestamps */}
-          <div className="flex  items-start justify-between gap-2">
+          <div className="flex  items-end justify-between gap-2">
             {/* Tags */}
             <div className="flex flex-wrap  gap-2">
               {tags.map((tag, index) => (
@@ -68,7 +68,7 @@ const ResultCards = ({
               {timeStamps.map((timeStamp, index) => (
                 <span
                   key={index}
-                  className="bg-[#ffc4cc] text-xs px-2 py-1 rounded-md "
+                  className="bg-[#ffc4cc] w-20 text-xs px-2 py-1 rounded-md "
                 >
                   {timeStamp}
                 </span>
@@ -76,11 +76,14 @@ const ResultCards = ({
             </div>
           </div>
         </CardFooter>  
-        {authors[0] && ( //if authors exist, show them as well
-          <div className="flex justify-end font-semibold p-2">
-          By: {authors}
+        {authors ?  ( //if authors exist, show them as well
+          <div className="flex justify-end gap-1 font-semibold p-2">
+          By: 
+            <span >
+              {authors}
+            </span>
           </div>
-        )}
+        ) : (<p className="flex justify-end gap-1 font-semibold p-2">By: No author, just vibes</p>)}
       </Card>
     </div>
   );

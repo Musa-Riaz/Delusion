@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import ResultCards from "@/Components/ResultCards";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setResultData } from "@/redux/slices/resultSlice";
+import { Input } from "@/Components/ui/input";
 import { Frown } from "lucide-react";
 import {MoonLoader } from 'react-spinners'
 import { useLocation } from "react-router";
@@ -18,11 +19,25 @@ import {
 } from "@/components/ui/pagination";
 import { useNavigate } from "react-router";
 import { setEndLink } from "@/redux/slices/resultSlice";
+import { Upload } from "antd";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
 import {Button} from '@/components/ui/button'
 const ResultsPage = () => {
   const dispatch = useDispatch();
+  const {Dragger} = Upload;
   const location = useLocation();
   let [page, setPage] = useState(1); // Pagination page number
+  const [files, setFiles] = useState();
+  const [fileUrl, setFileUrl] = useState();
   const navigate = useNavigate();
   const {results} = useSelector((state) => state.result);
   const {endLink} = useSelector((state) => state.result);
@@ -91,6 +106,10 @@ const ResultsPage = () => {
     
   };
 
+  const handleAddArticle = () => {
+
+  }
+
   const handleKeyDown = (e) => {
     if (suggestions.length > 0) {
       if (e.key === "ArrowDown" ) {
@@ -114,7 +133,7 @@ const ResultsPage = () => {
 
   return (
     <div className="bg-[#ffecd4] min-h-screen">
-      <div className=" p-2">
+      <div className="p-2 flex justify-between">
       <Button onClick={()=>navigate('/')}>Home</Button>
       </div>
       {/* Search Input Section */}
@@ -137,8 +156,63 @@ const ResultsPage = () => {
           >
             <Search />
           </span>
-
+          <span className="flex p-5 border-l-4 bg-black  border-black items-center hover:shadow-2xl transition hover:cursor-pointer">
+            <Dialog className="border">
+          <DialogTrigger>
+          <Plus onClick={handleAddArticle} className="text-white"/>
+          </DialogTrigger>
+          <DialogContent >
+            <DialogTitle>Upload Your File Here</DialogTitle>
+            <form>
+            <div className="flex flex-col justify-center items-center gap-5">
+            <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 hover:border-gray-400">
+  <label
+    htmlFor="file-input"
+    className="flex flex-col items-center cursor-pointer"
+  >
+    <p className="text-gray-500">Drag and drop your file here</p>
+    <p className="text-sm text-gray-400">or click to select files</p>
+  </label>
+  <Input
+    id="file-input"
+    type="file"
+    accept=".json"
+    className="hidden"
+    onChange={(e) => {
+      const selectedFiles = Array.from(e.target.files);
+      setFiles(selectedFiles);
+    }}
+  />
+  {files?.length > 0 && (
+    <ul className="mt-4 w-full text-sm text-gray-600">
+      {files?.map((file, index) => (
+        <li
+          key={index}
+          className="truncate border border-gray-300 bg-gray-100 rounded-md px-4 py-2 mb-2"
+        >
+          {file.name}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+              OR
+              <Input 
+              type="text"
+              placeholder='Enter url here'
+              value={fileUrl}
+              onChange={(e)=>setFileUrl(e.target.value)}
+              />
+            </div>
+            <div className='mt-3 flex justify-end'>
+              <Button type='submit'>Submit</Button>
+            </div>
+            </form>
+          </DialogContent>
+          </Dialog>
+          </span>
         </div>
+        
           {/* Suggestions */}
           {suggestions.length > 0 && query.trim() && (
             <div style={{ top: '19%' }} className="absolute z-50 overflow-y-auto border p-2 w-[40vw] bg-white rounded-lg shadow-lg ">
@@ -149,13 +223,13 @@ const ResultsPage = () => {
               ))}
             </div>
           )}
-        <h1 className="text-5xl font-semibold font-myFont1">The Top Search Results Are...</h1>
+        <h1 className="text-5xl font-myFont1">The Top Search <span className="font-extrabold">Results</span> Are...</h1>
       </div>
 
       {/* Search Results Section */}
       <div className="flex flex-wrap justify-center p-5">
         {loading ? (
-          <div className="flex justify-center  items-center w-full h-full">
+          <div className="flex justify-center items-center w-full h-full">
             <MoonLoader color="#000" size={60} />
           </div> // Show loading text while fetching results
         ) : results.length > 0 ? (
