@@ -8,6 +8,7 @@ from typing import Dict, Any
 from fastapi import FastAPI
 from fastapi import Query
 import autocomplete as ac
+import threading as th
 import indexer as idxr
 from math import ceil
 import uvicorn
@@ -65,7 +66,8 @@ async def upload_article( request: ArticleData):
     article_data = request.article
     csv_data = idxr.json_to_csv(article_data)
     idxr.index_csv_dataset([csv_data], idxr.lexicon_file, idxr.ids_file, idxr.forward_index_folder, idxr.processed_docs_file, False)
-    sorter.sort_all_barrels()
+    sorting_thread = th.Thread(target=sorter.sort_all_barrels)
+    sorting_thread.start()
     
     return JSONResponse({"success": True,
                          "message":"Article uploading...",
