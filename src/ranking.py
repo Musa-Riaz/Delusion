@@ -43,7 +43,7 @@ def rank_docs(docs, intersections):
                         added[2] = True
                 case 3:
                     if not added[3]:
-                        this_score += 40
+                        this_score += 20
                         added[3] = True
                 case 5:
                     if not added[5]:
@@ -97,10 +97,12 @@ def is_relevant(hit_list):
 def intersection_multiplier(doc, intersections):
     # for multi-word queries, intersections contains cuwemulative intersections of all the words
     # more detail in search_util.py
+    multiplier = 1
     for i in range(len(intersections) - 1, 0, -1):     # loop from last intersection (which is an intersection of all words)
         if doc[0] in intersections[i]:
             # multiplier is higher for the order of intersection the document is found in
             if intersections[i][doc[0]]:
                 return (i + 1) * 100        # intersection is in title/url/authors/tags
-            return (i + 1) * 2
-    return 1
+            if multiplier == 1:
+                multiplier = (i + 1) * 2    # in case a later intersection contains relevant hits
+    return multiplier

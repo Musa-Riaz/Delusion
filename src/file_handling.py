@@ -46,15 +46,16 @@ def load_forward_barrel(forward_barrel_file):
         print(f"Couldn't open {forward_index}, starting with empty forward index...")
         return {}
 
-def load_frequencies(frequencies_file):
+# loads constant-sized data stored in binary into a list
+def load_binary_data(file, struct_size = 4):
     try:
-        with open(frequencies_file, 'rb') as file:
+        with open(file, 'rb') as file:
             data = file.read()
-            num_freq = len(data) // 4
-            frequencies = struct.unpack(f'{num_freq}i', data)
-            return frequencies
+            num_structs = len(data) // struct_size
+            structs = struct.unpack(f'{num_structs}i', data)
+            return structs
     except IOError:
-        print(f"Couldn't open {frequencies_file}.")
+        print(f"Couldn't open {file}.")
         return []
     
 def convert_to_csv(index_entry):
@@ -72,17 +73,6 @@ def write_to_csv(file_name, entries, mode):
         writer.writerows(entries)
 
 # creates offsets for a the first byte of each line of a csv file
-def create_document_offsets(documents_file):
-    with open(documents_file, 'rb') as file:
-        offsets = []
-        offset = 0
-
-        for line in file:
-            offsets.append(offset)
-            offset += len(line)
-    
-    return offsets
-
 def create_document_offsets(documents_file):
     offsets = []
     
