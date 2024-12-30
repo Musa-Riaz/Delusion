@@ -49,7 +49,7 @@ const ResultsPage = () => {
   const [articleLoading, setArticleLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]); // Suggestions state
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [addMembersOnly, setAddMembersOnly] = useState(false);
+  const [addMembersOnly, setAddMembersOnly] = useState(true);
 
   const handleSearch = async (newPage = 1, members_only=addMembersOnly) => {
     setLoading(true);
@@ -372,6 +372,7 @@ const ResultsPage = () => {
               timeStamps={data.timeStamps}
               authors={data.authors}
               data={data}
+              members_only={addMembersOnly}
             />
           ))
         ) : (
