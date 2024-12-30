@@ -1,5 +1,7 @@
+from sorter import add_to_inv_barrel
 import word_processing as wp
 import file_handling as fh
+import file_paths as fp
 import threading as th
 import regex as re
 import struct
@@ -29,7 +31,6 @@ def get_tagged_text(text, section):
         # extracting relevant text from URL using regex
         match = re.search(r"\.[^\/.]+\/(.+)-.+$", text)  # get remaining text after 'medium.com'
         if match:
-            # print(f"Extracted text '{' '.join(re.split(r'[/-]', match.group(1)))}' from {text}.")
             return wp.tag_text(' '.join(re.split(r'[/-]', match.group(1))))  # split the text on / or - and join with spaces
         else:
             print(f"Couldn't get URL text from {text}.")
@@ -93,24 +94,41 @@ def index_article(article, indexed_urls, lexicon, lexicon_entries, forward_index
                 forward_index_entries.extend([[] for i in range(barrel - len(forward_index_entries) + 1)])
         forward_index_entries[barrel].append([next_doc_id, fh.convert_to_csv(these_entries[barrel])])
     
+    # write the text to the texts file, this is done here as keeping multiple entire texts in memory is not feasible
+    fh.append_offset(fp.texts_file)
+    fh.write_to_csv(fp.texts_file + '.csv', [[next_doc_id, article[TEXT]]], 'a')
+    
     next_doc_id += 1
+    
 
-def write_forward_entries(forward_index_entries, processed_docs, forward_index_folder, processed_docs_file):
+# writes forward entries, additionally updates inverted index based on a provided flag
+def write_forward_entries(forward_index_entries, processed_docs, forward_index_folder, processed_docs_file, update_inverted=False):
     fh.write_to_csv(processed_docs_file + '.csv', processed_docs, 'a')
     for i in range(len(forward_index_entries)):
         if forward_index_entries[i]:
             # writes to the specific barrels
             # barrels are name as n.csv where n is the barrel number
             fh.write_to_csv(forward_index_folder + f'/{i}.csv', forward_index_entries[i], 'a')
-
-
-# indexes a csv dataset, which can be provided as a list or a file path
-def index_csv_dataset(dataset, lexicon_file, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file, is_file=True):
+            if update_inverted:
+                add_to_inv_barrel(forward_index_entries[i][0], i)
+                
+            
+# indexes a csv dataset, provided as a file path
+# if the is_new_doc flag is set to True, the function assumes one document will be provided to be added to an existing index
+# and updates the inverted index entries as required too
+def index_csv_dataset(dataset, lexicon, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file, is_new_doc=True):
     os.makedirs('indexes/forward_index', exist_ok=True)
 
     global next_word_id, next_doc_id
     next_word_id, next_doc_id = fh.load_ids(ids_file)
-    lexicon = fh.load_lexicon(lexicon_file)
+    if is_new_doc:
+        # SCRAPE THUMBNAIL
+    
+        fh.append_offset(fp.scraped_file)
+        fh.write_to_csv(fp.scraped_file + '.csv', [[next_doc_id, '', 'No']], 'a')
+        
+    if not is_new_doc:
+        lexicon = fh.load_lexicon(lexicon)
     indexed_urls = fh.load_indexed_urls(indexed_urls_file)
     new_urls = set()
 
@@ -120,7 +138,7 @@ def index_csv_dataset(dataset, lexicon_file, ids_file, forward_index_folder, ind
 
     try:
         file = None
-        if is_file:
+        if not is_new_doc:
             file = open(dataset, encoding='utf-8')
             dataset = csv.reader(file)
             next(dataset)    # skip headings row
@@ -136,14 +154,16 @@ def index_csv_dataset(dataset, lexicon_file, ids_file, forward_index_folder, ind
                 forward_index_entries = []
 
         # write last entries to forward index barrels
-        write_forward_entries(forward_index_entries, processed_docs, forward_index_folder, processed_docs_file)
+        write_forward_entries(forward_index_entries, processed_docs, forward_index_folder, processed_docs_file, is_new_doc)
+        # update the inverted index entries too, if a document is beign added
+            
     except IOError:
-        print(f"Couldn't open {dataset_file}")
+        print(f"Couldn't open {dataset}")
     finally:
         if file:
             file.close()
 
-    fh.write_to_csv(lexicon_file, lexicon_entries, 'a')
+    fh.write_to_csv(fp.lexicon_file, lexicon_entries, 'a')
 
     # create and write offsets for processed documents
     offsets = fh.create_document_offsets(processed_docs_file + '.csv')
@@ -160,14 +180,8 @@ def index_csv_dataset(dataset, lexicon_file, ids_file, forward_index_folder, ind
 
     print(f"\nDone! Indexed up to doc_id {next_doc_id}.")
 
+
 def json_to_csv(json):
     return [json['title'], json['text'], json['url'], json['authors'], json['timestamp'], json['tags']]
-    
-dataset_file = '30_articles.csv'
-lexicon_file = 'indexes/lexicon.csv'
-ids_file = 'indexes/next_ids.txt'
-forward_index_folder = 'indexes/forward_index'
-indexed_urls_file = 'indexes/indexed_urls.txt'  # used to check which URLs have been indexed already
-processed_docs_file = 'indexes/processed'       # used for retrieving document data given doc id
 
 # index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file)

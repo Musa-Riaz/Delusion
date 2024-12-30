@@ -3,11 +3,11 @@ from fastapi.responses import JSONResponse
 from file_handling import load_lexicon
 from search_util import get_results
 from pydantic import BaseModel
-from pydantic import BaseModel
 from typing import Dict, Any
 from fastapi import FastAPI
 from fastapi import Query
 import autocomplete as ac
+import file_paths as fp
 import threading as th
 import indexer as idxr
 from math import ceil
@@ -15,7 +15,7 @@ import uvicorn
 import sorter
 
 print("Loading lexicon...")
-lexicon = load_lexicon(f'indexes/lexicon.csv')
+lexicon = load_lexicon(fp.lexicon_file)
 print("Creating autocomplete trie...")
 lexicon_trie = ac.create_autocomplete_trie(100000, lexicon)
 
@@ -64,10 +64,7 @@ async def upload_url(request: QueryData):
 @app.post("/upload")
 async def upload_article( request: ArticleData):
     article_data = request.article
-    csv_data = idxr.json_to_csv(article_data)
-    idxr.index_csv_dataset([csv_data], idxr.lexicon_file, idxr.ids_file, idxr.forward_index_folder, idxr.processed_docs_file, False)
-    sorting_thread = th.Thread(target=sorter.sort_all_barrels)
-    sorting_thread.start()
+    idxr.index_csv_dataset([idxr.json_to_csv(article_data)], lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True)
     
     return JSONResponse({"success": True,
                          "message":"Article uploading...",
