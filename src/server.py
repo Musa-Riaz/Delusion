@@ -12,7 +12,6 @@ import threading as th
 import indexer as idxr
 from math import ceil
 import uvicorn
-import sorter
 
 print("Loading lexicon...")
 lexicon = load_lexicon(fp.lexicon_file)
