@@ -1,6 +1,6 @@
+from file_handling import load_lexicon, load_scraped
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from file_handling import load_lexicon
 from search_util import get_results
 from pydantic import BaseModel
 from typing import Dict, Any
@@ -18,6 +18,8 @@ print("Loading lexicon...")
 lexicon = load_lexicon(fp.lexicon_file)
 print("Creating autocomplete trie...")
 lexicon_trie = ac.create_autocomplete_trie(100000, lexicon)
+print("Loading scraped data...")
+scraped = load_scraped(fp.scraped_file + '.csv')
 
 app = FastAPI()
 
@@ -42,7 +44,7 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_
     query = request.query
     start_index = (page - 1) * limit
     end_index = start_index + limit
-    results, total_results = get_results(query, lexicon, start_index, end_index)
+    results, total_results = get_results(query, lexicon, scraped, start_index, end_index, members_only)
     
     return JSONResponse({"success": True,
                           "data": results,
