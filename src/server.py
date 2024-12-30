@@ -53,8 +53,11 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_
 async def upload_url(request: QueryData):
     url = request.query
 
-    return JSONResponse({"success": True,
-                         "message":"Article uploaded successfully",
+#yha pr apni logic implement kro ge
+#uske accordingly we will send the response as true or false
+
+    return JSONResponse({"success": False,
+                         "message":"Wrong url",
                           "url": url
                           })
 
