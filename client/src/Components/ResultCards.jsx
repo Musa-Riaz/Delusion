@@ -16,8 +16,7 @@ const ResultCards = ({
   imageUrl,
   tags,
   timeStamps,
-  authors,
-  data
+  authors
 }) => {
 
   return (
@@ -43,9 +42,8 @@ const ResultCards = ({
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 hover:underline break-words"
-            >
-              {description}
-            </a>
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
           </CardDescription>
         </CardContent>
         <CardFooter className="p-4  bg-gray-50">
