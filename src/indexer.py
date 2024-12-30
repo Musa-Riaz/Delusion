@@ -2,7 +2,7 @@ from sorter import add_to_inv_barrel
 import word_processing as wp
 import file_handling as fh
 import file_paths as fp
-import threading as th
+import scraper as sp
 import regex as re
 import struct
 import csv
@@ -116,16 +116,24 @@ def write_forward_entries(forward_index_entries, processed_docs, forward_index_f
 # indexes a csv dataset, provided as a file path
 # if the is_new_doc flag is set to True, the function assumes one document will be provided to be added to an existing index
 # and updates the inverted index entries as required too
-def index_csv_dataset(dataset, lexicon, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file, is_new_doc=True):
+def index_csv_dataset(dataset, lexicon, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file, is_new_doc=True, scrape=False):
     os.makedirs('indexes/forward_index', exist_ok=True)
 
     global next_word_id, next_doc_id
     next_word_id, next_doc_id = fh.load_ids(ids_file)
-    if is_new_doc:
-        # SCRAPE THUMBNAIL
+    if scrape:
+        scraped_data = sp.scrape_medium_article(dataset['url'])
+        try:
+            scraped_data['thumbnail_url']
+        except KeyError:
+            return scraped_data     # error while scraping
+    elif is_new_doc:
+        scraped_data = dataset
     
+    if is_new_doc: 
         fh.append_offset(fp.scraped_file)
-        fh.write_to_csv(fp.scraped_file + '.csv', [[next_doc_id, '', 'No']], 'a')
+        fh.write_to_csv(fp.scraped_file + '.csv', [[next_doc_id, scraped_data['thumbnail_url'], scraped_data['members_only']]], 'a')
+        dataset = [json_to_csv(dataset)]
         
     if not is_new_doc:
         lexicon = fh.load_lexicon(lexicon)
