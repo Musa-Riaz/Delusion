@@ -6,6 +6,7 @@ import ranking as rk
 import struct
 import json
 import ast
+import re
 
 # given a word, returns its inverted index entries
 def get_word_docs(word, lexicon, results):

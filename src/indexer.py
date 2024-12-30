@@ -184,4 +184,4 @@ def index_csv_dataset(dataset, lexicon, ids_file, forward_index_folder, indexed_
 def json_to_csv(json):
     return [json['title'], json['text'], json['url'], json['authors'], json['timestamp'], json['tags']]
 
-index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file)
+# index_csv_dataset(dataset_file, lexicon_file, ids_file, forward_index_folder, indexed_urls_file, processed_docs_file)

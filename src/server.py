@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from file_handling import load_lexicon
 from search_util import get_results
 from pydantic import BaseModel
+from typing import Dict, Any
 from fastapi import FastAPI
 from fastapi import Query
 import autocomplete as ac
@@ -18,6 +19,9 @@ print("Creating autocomplete trie...")
 lexicon_trie = ac.create_autocomplete_trie(100000, lexicon)
 
 app = FastAPI()
+
+class ArticleData(BaseModel):
+     article: Dict[str, Any] #idk what this is but apparently it is necessary if I want to send the data as json object
 
 # Configure CORS
 app.add_middleware(
