@@ -87,17 +87,34 @@ def create_document_offsets(documents_file):
     
     return offsets
 
+# appends a new offset to the end of a binary offset file
+# the new offset is simply the end of the file, as this is the start of the 'next' line
+# should be called BEFORE adding a new entry
+def append_offset(file_path):
+    with open(file_path + '.csv', 'rb') as file:
+        file.seek(0, 2)
+        new_offset = file.tell()
+    
+    with open(file_path + '.bin', 'ab') as file:
+        file.write(struct.pack('I', new_offset))
+
 # reads a row based on offsets
 def read_with_offset(row_num, file_name):
     with open(file_name + '.bin', 'rb') as file:
         file.seek(row_num * 4)
         data = file.read(8)
         pos = struct.unpack('I', data[0:4])[0]
-        next_pos = struct.unpack('I', data[4:8])[0]
+        try:
+            next_pos = struct.unpack('I', data[4:8])[0]
+        except:
+            next_pos = 0        # in case of last row
     
     with open(file_name + '.csv', 'rb') as file:
         file.seek(pos)
-        data = file.read(next_pos - pos).decode()
+        if next_pos != 0:
+            data = file.read(next_pos - pos).decode()
+        else:
+            data = file.read().decode()     # last row - read all remaining data
         # the csv row is obtained as a string
         # read it using a csv reader to get it in a usable format
         string_file = StringIO(data)

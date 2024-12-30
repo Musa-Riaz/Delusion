@@ -1,5 +1,6 @@
 import word_processing as wp
 import file_handling as fh
+import file_paths as fp
 import threading as th
 import ranking as rk
 import struct
@@ -21,7 +22,7 @@ def get_word_docs(word, lexicon, results):
     position = word_id % 1000
 
     # get the offset of this word into the barrel - O(1) operation
-    with open(f'indexes/inverted_index/{barrel}.bin', 'rb') as file:
+    with open(fp.inverted_index_folder + f'/{barrel}.bin', 'rb') as file:
         # offsets are stored as consant sized 4 bit integers
         file.seek(position * 4)
         # position in barrel
@@ -30,7 +31,7 @@ def get_word_docs(word, lexicon, results):
         next_position = struct.unpack('I', data[4:8])[0]
     
     # seek to the offset position and get the entry - also O(1)
-    with open(f'indexes/inverted_index/{barrel}.csv', 'rb') as file:
+    with open(fp.inverted_index_folder + f'/{barrel}.csv', 'rb') as file:
         file.seek(position)
         data = file.read(next_position - position).decode()
         data = json.loads(ast.literal_eval(data)[1])
@@ -53,17 +54,40 @@ def get_doc_info(doc_id, results):
     
 # for threading in get_doc_info()
 def get_processed_data(doc_id, processed_info):
-    data = fh.read_with_offset(doc_id, 'indexes/processed')
+    data = fh.read_with_offset(doc_id, fp.processed_docs_file)
     data[3] = ast.literal_eval(data[3])
     data[4] = ast.literal_eval(data[4])
     processed_info.append(data)
 
 def get_scraped_data(doc_id, scraped_info):
     try:
-        data = fh.read_with_offset(doc_id, 'indexes/scraped')
+        data = fh.read_with_offset(doc_id, fp.scraped_file)
     except:
         scraped_info.append(['', ''])
     scraped_info.append(data)
+
+def get_description(doc_id, text, word):
+    data = fh.read_with_offset(doc_id, fp.texts_file)
+    text.append(find_relevant_desc(data[1], word, 130))
+    
+def find_relevant_desc(text, word, n):
+    # split into sentences
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    
+    index = 0
+    # find sentence containing word
+    for i in range(len(sentences)):
+        if re.search(rf'\b{re.escape(word)}\b', sentences[i], re.IGNORECASE):
+            index = i
+
+    result = ''
+    for sentence in sentences[index:]:
+        for char in sentence:
+            result += char
+            if len(result) > n:
+                return result + "..."
+        result += ' '
+    return result + "..."
 
 def convert_to_json(doc):
     doc_dict = {}

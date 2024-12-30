@@ -6,11 +6,14 @@ from pydantic import BaseModel
 from fastapi import FastAPI
 from fastapi import Query
 import autocomplete as ac
+import file_paths as fp
+import threading as th
+import indexer as idxr
 from math import ceil
 import uvicorn
 
 print("Loading lexicon...")
-lexicon = load_lexicon(f'indexes/lexicon.csv')
+lexicon = load_lexicon(fp.lexicon_file)
 print("Creating autocomplete trie...")
 lexicon_trie = ac.create_autocomplete_trie(100000, lexicon)
 
@@ -42,6 +45,26 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8):
                           "page": page,
                           "limit": limit,   #this is the limit, i.e the number of results per page
                           })
+
+@app.post("/upload/url")
+async def upload_url(request: QueryData):
+    url = request.query
+
+    return JSONResponse({"success": False,
+                         "message":"Invalid URL",
+                          "url": url
+                          })
+
+@app.post("/upload")
+async def upload_article( request: ArticleData):
+    article_data = request.article
+    idxr.index_csv_dataset([idxr.json_to_csv(article_data)], lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True)
+    
+    return JSONResponse({"success": True,
+                         "message":"Article uploading...",
+                          "data": article_data
+                          })
+
 
 @app.get("/suggestions")
 async def get_suggestions(query: str = Query(..., min_length=1, description="Search query"), limit: int = 10):
