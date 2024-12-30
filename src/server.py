@@ -12,6 +12,7 @@ import threading as th
 import indexer as idxr
 from math import ceil
 import uvicorn
+import sorter
 
 print("Loading lexicon...")
 lexicon = load_lexicon(fp.lexicon_file)
@@ -34,9 +35,10 @@ app.add_middleware(
 
 class QueryData(BaseModel):
     query: str
+  
 
 @app.post("/data")
-async def post_data(request : QueryData, page: int = 1, limit: int = 8):
+async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_only: bool = False):
     query = request.query
     start_index = (page - 1) * limit
     end_index = start_index + limit
@@ -54,8 +56,8 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8):
 async def upload_url(request: QueryData):
     url = request.query
 
-    return JSONResponse({"success": False,
-                         "message":"Invalid URL",
+    return JSONResponse({"success": True,
+                         "message":"Article uploaded successfully",
                           "url": url
                           })
 
@@ -81,6 +83,7 @@ async def get_suggestions(query: str = Query(..., min_length=1, description="Sea
         return JSONResponse(content={"suggestions":suggestions})
     except Exception as e:
          return JSONResponse(content={"error": str(e)}, status_code=500)
-   
+
+
 if __name__ == "__main__":
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)

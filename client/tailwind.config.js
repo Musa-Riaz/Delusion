@@ -17,7 +17,8 @@ export default {
   	},
     fontFamily: {
       'myFont1': ["My Font", 'serif'],
-    }
+    },
   },
+  
   plugins: [require("tailwindcss-animate"), require('@tailwindcss/line-clamp')],
 }

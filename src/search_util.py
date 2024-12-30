@@ -40,18 +40,21 @@ def get_word_docs(word, lexicon, results):
 
     
 # returns a document's info (except text) given doc id
-def get_doc_info(doc_id, results):
-    processed_info, scraped_info = [], []
+def get_doc_info(doc_id, results, word):
+    processed_info, scraped_info, text = [], [], []
     processed_thread = th.Thread(target=get_processed_data, args=(doc_id, processed_info))
     scraped_thread = th.Thread(target=get_scraped_data, args=(doc_id, scraped_info))
+    desc_thread = th.Thread(target=get_description, args=(doc_id, text, word))
     
     processed_thread.start()
     scraped_thread.start()
+    desc_thread.start()
     processed_thread.join()
     scraped_thread.join()
+    desc_thread.join()
     
-    # [doc_id, title, url, authors, tags, timestamp, img_url, members_only] is being returned
-    results.append(convert_to_json(processed_info[0] + scraped_info[0][1:]))
+    # [doc_id, title, url, authors, tags, timestamp, img_url, members_only, description] is being returned
+    results.append(convert_to_json(processed_info[0] + scraped_info[0][1:] + text))
     
 # for threading in get_doc_info()
 def get_processed_data(doc_id, processed_info):
@@ -94,11 +97,11 @@ def convert_to_json(doc):
     doc_dict = {}
     doc_dict['title'] = doc[1]
     doc_dict['url'] = doc[2]
-    doc_dict['description'] = 'THIS IS DESCRIPTION HEHE'
+    doc_dict['description'] = doc[8]
     doc_dict['imageUrl'] = doc[6]
     doc_dict['tags'] = doc[4]
     doc_dict['timeStamps'] = [doc[5][:10]]
-    doc_dict['authors'] = doc[3]
+    doc_dict['authors'] = ', '.join(doc[3])
     return doc_dict
 
 def get_results(query, lexicon, start, end):
@@ -132,7 +135,7 @@ def get_results(query, lexicon, start, end):
     for i in range(start, end):
         if i >= len(result_docs):
             break
-        this_thread = th.Thread(target=get_doc_info, args=(result_docs[i][1], results))
+        this_thread = th.Thread(target=get_doc_info, args=(result_docs[i][1], results, query[0]))
         threads.append(this_thread)
         this_thread.start()
         
