@@ -22,39 +22,24 @@ def get_word_docs(word, lexicon, results):
     barrel = word_id // 1000
     position = word_id % 1000
 
-    # get the offset of this word into the barrel - O(1) operation
-    with open(fp.inverted_index_folder + f'/{barrel}.bin', 'rb') as file:
-        # offsets are stored as consant sized 4 bit integers
-        file.seek(position * 4)
-        # position in barrel
-        data = file.read(8)
-        position = struct.unpack('I', data[0:4])[0]
-        next_position = struct.unpack('I', data[4:8])[0]
-    
-    # seek to the offset position and get the entry - also O(1)
-    with open(fp.inverted_index_folder + f'/{barrel}.csv', 'rb') as file:
-        file.seek(position)
-        data = file.read(next_position - position).decode()
-        data = json.loads(ast.literal_eval(data)[1])
-        results[word] = data
+    data = fh.read_with_offset(position, fp.inverted_index_folder + f'/{barrel}')
+    data = json.loads(data[1])
+    results[word] = data
 
     
 # returns a document's info (except text) given doc id
-def get_doc_info(doc_id, results, word):
-    processed_info, scraped_info, text = [], [], []
+def get_doc_info(doc_id, results, query, scraped):
+    processed_info, text = [], []
     processed_thread = th.Thread(target=get_processed_data, args=(doc_id, processed_info))
-    scraped_thread = th.Thread(target=get_scraped_data, args=(doc_id, scraped_info))
-    desc_thread = th.Thread(target=get_description, args=(doc_id, text, word))
+    desc_thread = th.Thread(target=get_description, args=(doc_id, text, query))
     
     processed_thread.start()
-    scraped_thread.start()
     desc_thread.start()
     processed_thread.join()
-    scraped_thread.join()
     desc_thread.join()
     
     # [doc_id, title, url, authors, tags, timestamp, img_url, members_only, description] is being returned
-    results.append(convert_to_json(processed_info[0] + scraped_info[0][1:] + text))
+    results.append(convert_to_json(processed_info[0] + scraped[doc_id][1:] + text))
     
 # for threading in get_doc_info()
 def get_processed_data(doc_id, processed_info):
@@ -63,18 +48,14 @@ def get_processed_data(doc_id, processed_info):
     data[4] = ast.literal_eval(data[4])
     processed_info.append(data)
 
-def get_scraped_data(doc_id, scraped_info):
-    try:
-        data = fh.read_with_offset(doc_id, fp.scraped_file)
-    except:
-        scraped_info.append(['', ''])
-    scraped_info.append(data)
-
-def get_description(doc_id, text, word):
+def get_description(doc_id, text, query):
     data = fh.read_with_offset(doc_id, fp.texts_file)
-    text.append(find_relevant_desc(data[1], word, 130))
+    text.append(find_relevant_desc(data[1], query, 130))
     
-def find_relevant_desc(text, word, n):
+# returns ~n characters starting from the sentence containing the provided word in the given text
+# returns the first ~n characters if word doesnt exist
+def find_relevant_desc(text, query, n):
+    word = query[0]
     # split into sentences
     sentences = re.split(r'(?<=[.!?])\s+', text)
     
@@ -86,11 +67,14 @@ def find_relevant_desc(text, word, n):
 
     result = ''
     for sentence in sentences[index:]:
-        for char in sentence:
-            result += char
+        for word in sentence.split():
+            if word.lower() in query:
+                result += '<b>' + word + r'<\b>'    # highlight this word
+            else:
+                result += word
+            result += ' '
             if len(result) > n:
                 return result + "..."
-        result += ' '
     return result + "..."
 
 def convert_to_json(doc):
@@ -98,13 +82,13 @@ def convert_to_json(doc):
     doc_dict['title'] = doc[1]
     doc_dict['url'] = doc[2]
     doc_dict['description'] = doc[8]
-    doc_dict['imageUrl'] = doc[6]
+    doc_dict['imageUrl'] = doc[6] if doc[6] != "No thumbnail available" else ''
     doc_dict['tags'] = doc[4]
     doc_dict['timeStamps'] = [doc[5][:10]]
     doc_dict['authors'] = ', '.join(doc[3])
     return doc_dict
 
-def get_results(query, lexicon, start, end):
+def get_results(query, lexicon, scraped, start, end, members_only):
     query = wp.process_query(query)
     print(query)
 
@@ -125,6 +109,14 @@ def get_results(query, lexicon, start, end):
     for docs in words.values():
         if docs:
             for doc in rk.rank_docs(docs, intersections):
+                # article is deleted, skip
+                if scraped[doc[1]][2] == 'Unknown':
+                    continue
+                
+                # request to not show members-only articles, skip members-only articles
+                if not members_only and scraped[doc[1]][2] == 'Yes':
+                    continue
+                
                 if doc[1] not in result_docs_set:
                     result_docs.append(doc)
                 result_docs_set.add(doc[1])
@@ -135,7 +127,7 @@ def get_results(query, lexicon, start, end):
     for i in range(start, end):
         if i >= len(result_docs):
             break
-        this_thread = th.Thread(target=get_doc_info, args=(result_docs[i][1], results, query[0]))
+        this_thread = th.Thread(target=get_doc_info, args=(result_docs[i][1], results, query, scraped))
         threads.append(this_thread)
         this_thread.start()
         

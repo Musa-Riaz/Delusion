@@ -121,7 +121,7 @@ def add_to_inv_barrel(entry, barrel_num):
             current_line += 1
     
         for word in entry[1][current_word:]:
-            line = str(word[0]) + ',"' + str([entry[0], word[1]]) + '"\n'
+            line = str(word[0]) + ',"' + str([[entry[0], word[1]]]) + '"\n'
             line = line.encode()
             temp_barrel.write(line)
             offsets.append(current_offset)
