@@ -6,6 +6,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { setResultData } from "@/redux/slices/resultSlice";
 import { Input } from "@/Components/ui/input";
 import { Frown } from "lucide-react";
+import { FaStar } from "react-icons/fa";
+import { CiStar } from "react-icons/ci";
 import { MoonLoader } from "react-spinners";
 import { useLocation } from "react-router";
 import {
@@ -51,7 +53,7 @@ const ResultsPage = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [addMembersOnly, setAddMembersOnly] = useState(true);
 
-  const handleSearch = async (newPage = 1, members_only=addMembersOnly) => {
+  const handleSearch = async (newPage = 1, members_only = addMembersOnly) => {
     setLoading(true);
     setPage(newPage); // Set page number
     setSuggestions([]); // Clear suggestions after search
@@ -112,8 +114,6 @@ const ResultsPage = () => {
     }
   };
 
-
-
   const handleFileChange = (e) => {
     const file = e.target.files[0]; // Get the selected file
     if (file) {
@@ -169,10 +169,9 @@ const ResultsPage = () => {
     } else if (articleUrl) {
       try {
         setArticleLoading(true);
-        const res = await axios.post(
-          "http://localhost:8000/upload/url",
-          {query:articleUrl} 
-        );
+        const res = await axios.post("http://localhost:8000/upload/url", {
+          query: articleUrl,
+        });
         setArticleLoading(false);
         if (res.data.success) {
           toast({
@@ -181,8 +180,7 @@ const ResultsPage = () => {
             variant: "default",
           });
           setArticleUrl("");
-        }
-        else{
+        } else {
           toast({
             title: "Error",
             description: res.data.message,
@@ -230,18 +228,10 @@ const ResultsPage = () => {
     <div className="bg-[#ffecd4] min-h-screen">
       <div className="p-2 flex gap-2 flex-col items-start  ">
         <Button onClick={() => navigate("/")}>Home</Button>
-        <div className="flex gap-2 items-center">
-          <Input
-          type='checkbox'
-          checked={addMembersOnly}
-          onChange={() => setAddMembersOnly(!addMembersOnly)}
-          />
-          <Label>Members Only</Label>
-        </div>
       </div>
       {/* Search Input Section */}
-      <div className="flex justify-center items-center flex-col gap-6 p-10">
-        <div className="w-[40vw] h-[6vh] flex rounded-lg border-4 border-black">
+      <div className="flex justify-center items-center flex-col gap-22 p-10">
+        <div className="w-[40vw] h-[7vh] flex rounded-lg border-4 border-black">
           <input
             type="text"
             placeholder="Type Anything"
@@ -272,7 +262,7 @@ const ResultsPage = () => {
                 ) : (
                   <>
                     <DialogTitle>Upload Your File Here</DialogTitle>
-                    <form onSubmit={handleArticleSubmission} >
+                    <form onSubmit={handleArticleSubmission}>
                       <div className="flex flex-col justify-center items-center gap-5 ">
                         <div className="flex flex-col items-center justify-center w-full p-6 border-2 border-dashed border-gray-600 rounded-lg bg-[#ffecd4] hover:border-gray-800">
                           <label
@@ -311,7 +301,7 @@ const ResultsPage = () => {
                         </div>
                         OR
                         <Input
-                          type='url'
+                          type="url"
                           placeholder="Enter your link here"
                           value={articleUrl}
                           onChange={(e) => setArticleUrl(e.target.value)}
@@ -327,8 +317,22 @@ const ResultsPage = () => {
               </DialogContent>
             </Dialog>
           </span>
+          <div className="flex items-center  ">
+            <Label className="flex items-center gap-2 hover:cursor-pointer">
+              <input
+                type="checkbox"
+                checked={addMembersOnly}
+                onChange={() => setAddMembersOnly(!addMembersOnly)}
+                className="hidden peer"
+              />
+              <div className="w-16 h-12 p-2 rounded-xs flex justify-center items-center :bg-[#ffecd4] peer-checked:bg-[#ffecd4]">
+                {addMembersOnly ? <FaStar className=" text-yellow-400 w-24 h-24"/> 
+              : <CiStar className="  w-24 h-24"/>  
+              }
+              </div>
+            </Label>
+          </div>
         </div>
-         
 
         {/* Suggestions */}
         {suggestions.length > 0 && query.trim() && (
