@@ -82,6 +82,7 @@ def convert_to_json(doc):
     doc_dict['title'] = doc[1]
     doc_dict['url'] = doc[2]
     doc_dict['description'] = doc[8]
+    doc_dict['members_only'] = True if doc[7] == 'Yes' else False
     doc_dict['imageUrl'] = doc[6] if doc[6] != "No thumbnail available" else ''
     doc_dict['tags'] = doc[4]
     doc_dict['timeStamps'] = [doc[5][:10]]
