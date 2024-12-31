@@ -24,9 +24,17 @@ const ResultCards = ({
   return (
     <div className="flex p-4">
       <Card className="w-[380px] flex flex-col overflow-hidden border rounded-lg shadow-lg transition-transform transform hover:scale-105 duration-200 ease-in-out">
-        <CardHeader className="p-4  h-24">
+        <CardHeader className="p-4 h-24 flex ">
+        {/* <div className=" flex justify-end">{members_only && <Star color="yellow"/>}</div> */}
           <CardTitle className="text-lg line-clamp-2 overflow-hidden text-ellipsis font-bold ">{title}</CardTitle>
-          
+          {members_only && (
+            <div
+              className="flex justify-end"
+              title="Members Only"
+            >
+              <Star color="yellow"  />
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-4">
           {/* Image */}
