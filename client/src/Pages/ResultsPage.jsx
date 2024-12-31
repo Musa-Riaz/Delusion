@@ -49,7 +49,7 @@ const ResultsPage = () => {
   const [articleLoading, setArticleLoading] = useState(false);
   const [suggestions, setSuggestions] = useState([]); // Suggestions state
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [addMembersOnly, setAddMembersOnly] = useState(false);
+  const [addMembersOnly, setAddMembersOnly] = useState(true);
 
   const handleSearch = async (newPage = 1, members_only=addMembersOnly) => {
     setLoading(true);
@@ -174,13 +174,20 @@ const ResultsPage = () => {
           {query:articleUrl} 
         );
         setArticleLoading(false);
-        if (res.status == 200) {
+        if (res.data.success) {
           toast({
             title: "Success",
             description: "Article uploaded successfully",
             variant: "default",
           });
           setArticleUrl("");
+        }
+        else{
+          toast({
+            title: "Error",
+            description: res.data.message,
+            variant: "destructive",
+          });
         }
       } catch (err) {
         setArticleLoading(false);
@@ -205,7 +212,9 @@ const ResultsPage = () => {
       } else if (e.key === "Tab") {
         e.preventDefault(); // Prevent default tab behavior
         if (selectedIndex >= 0) {
-          setQuery(suggestions[selectedIndex]);
+          const words = query.split(" ");
+          words[words.length - 1] = suggestions[selectedIndex]; // Replace the last word
+          setQuery(words.join(" ")); // Join the words back together
           setSuggestions([]); // Clear suggestions after selection
         }
       }
@@ -363,6 +372,7 @@ const ResultsPage = () => {
               timeStamps={data.timeStamps}
               authors={data.authors}
               data={data}
+              members_only={data.members_only}
             />
           ))
         ) : (

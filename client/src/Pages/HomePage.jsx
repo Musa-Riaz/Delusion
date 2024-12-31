@@ -16,7 +16,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  const handleSearch = async (page = 1, members_only = false) => {
+  const handleSearch = async (page = 1) => {
     setLoading(true);
 
     try {
@@ -86,7 +86,9 @@ const HomePage = () => {
       } else if (e.key === "Tab") {
         e.preventDefault(); // Prevent default tab behavior
         if (selectedIndex >= 0) {
-          setQuery(suggestions[selectedIndex]);
+          const words = query.split(" ");
+          words[words.length - 1] = suggestions[selectedIndex]; // Replace the last word
+          setQuery(words.join(" ")); // Join the words back together
           setSuggestions([]); // Clear suggestions after selection
         }
       }
