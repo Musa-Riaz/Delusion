@@ -11,6 +11,7 @@ import file_paths as fp
 import threading as th
 import indexer as idxr
 from math import ceil
+import scraper as sp
 import uvicorn
 import sorter
 
@@ -55,19 +56,35 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_
 @app.post("/upload/url")
 async def upload_url(request: QueryData):
     url = request.query
-
+    article_data = sp.scrape_medium_article(url)
+    
+    try:
+        article_data['thumbnail_url']
+    except KeyError:
+        return JSONResponse({"success": False,
+                         "message": f"Error scraping URL: {article_data['details']}",
+                          "url": url
+                          })
+    
+    idxr.index_csv_dataset(article_data, lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True, False)
+    
     return JSONResponse({"success": True,
-                         "message":"Article uploaded successfully",
+                         "message": "Article uploaded successfully",
                           "url": url
                           })
 
 @app.post("/upload")
 async def upload_article( request: ArticleData):
     article_data = request.article
-    idxr.index_csv_dataset([idxr.json_to_csv(article_data)], lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True)
+    scraped_data = idxr.index_csv_dataset(article_data, lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True, True)
+    if scraped_data:
+        return JSONResponse({"success": False,
+                         "message": f"Error scraping URL: {scraped_data['details']}",
+                          "data": article_data
+                          })
     
     return JSONResponse({"success": True,
-                         "message":"Article uploading...",
+                         "message": "Article uploaded successfully",
                           "data": article_data
                           })
 
