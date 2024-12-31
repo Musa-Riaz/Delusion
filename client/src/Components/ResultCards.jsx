@@ -17,7 +17,8 @@ const ResultCards = ({
   imageUrl,
   tags,
   timeStamps,
-  authors
+  authors,
+  members_only
 }) => {
 
   return (
@@ -25,6 +26,7 @@ const ResultCards = ({
       <Card className="w-[380px] flex flex-col overflow-hidden border rounded-lg shadow-lg transition-transform transform hover:scale-105 duration-200 ease-in-out">
         <CardHeader className="p-4  h-24">
           <CardTitle className="text-lg line-clamp-2 overflow-hidden text-ellipsis font-bold ">{title}</CardTitle>
+          
         </CardHeader>
         <CardContent className="p-4">
           {/* Image */}

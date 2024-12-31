@@ -372,6 +372,7 @@ const ResultsPage = () => {
               timeStamps={data.timeStamps}
               authors={data.authors}
               data={data}
+              members_only={data.members_only}
             />
           ))
         ) : (
