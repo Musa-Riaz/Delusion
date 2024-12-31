@@ -2,6 +2,7 @@ from io import StringIO
 import struct
 import json
 import csv
+import ast
 
 def load_ids(ids_file):
     try:
@@ -45,6 +46,13 @@ def load_forward_barrel(forward_barrel_file):
     except IOError:
         print(f"Couldn't open {forward_index}, starting with empty forward index...")
         return {}
+
+def load_scraped(scraped_file):
+    with open(scraped_file, 'r', newline='', encoding='utf-8') as file:
+        scraped = file.readlines()
+        for i in range(len(scraped)):
+            scraped[i] = scraped[i].strip().split(',')
+    return scraped
 
 # loads constant-sized data stored in binary into a list
 def load_binary_data(file, struct_size = 4):
@@ -100,6 +108,7 @@ def append_offset(file_path):
 
 # reads a row based on offsets
 def read_with_offset(row_num, file_name):
+    csv.field_size_limit(10000000)
     with open(file_name + '.bin', 'rb') as file:
         file.seek(row_num * 4)
         data = file.read(8)

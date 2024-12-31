@@ -1,6 +1,6 @@
+from file_handling import load_lexicon, load_scraped
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from file_handling import load_lexicon
 from search_util import get_results
 from pydantic import BaseModel
 from typing import Dict, Any
@@ -11,13 +11,15 @@ import file_paths as fp
 import threading as th
 import indexer as idxr
 from math import ceil
+import scraper as sp
 import uvicorn
-import sorter
 
 print("Loading lexicon...")
 lexicon = load_lexicon(fp.lexicon_file)
 print("Creating autocomplete trie...")
 lexicon_trie = ac.create_autocomplete_trie(100000, lexicon)
+print("Loading scraped data...")
+scraped = load_scraped(fp.scraped_file + '.csv')
 
 app = FastAPI()
 
@@ -42,7 +44,7 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_
     query = request.query
     start_index = (page - 1) * limit
     end_index = start_index + limit
-    results, total_results = get_results(query, lexicon, start_index, end_index)
+    results, total_results = get_results(query, lexicon, scraped, start_index, end_index, members_only)
     
     return JSONResponse({"success": True,
                           "data": results,
@@ -55,22 +57,35 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_
 @app.post("/upload/url")
 async def upload_url(request: QueryData):
     url = request.query
-
-#yha pr apni logic implement kro ge
-#uske accordingly we will send the response as true or false
-
-    return JSONResponse({"success": False,
-                         "message":"Wrong url",
+    article_data = sp.scrape_medium_article(url)
+    
+    try:
+        article_data['thumbnail_url']
+    except KeyError:
+        return JSONResponse({"success": False,
+                         "message": f"Error scraping URL: {article_data['details']}",
+                          "url": url
+                          })
+    
+    idxr.index_csv_dataset(article_data, lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True, False)
+    
+    return JSONResponse({"success": True,
+                         "message": "Article uploaded successfully",
                           "url": url
                           })
 
 @app.post("/upload")
 async def upload_article( request: ArticleData):
     article_data = request.article
-    idxr.index_csv_dataset([idxr.json_to_csv(article_data)], lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True)
+    scraped_data = idxr.index_csv_dataset(article_data, lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True, True)
+    if scraped_data:
+        return JSONResponse({"success": False,
+                         "message": f"Error scraping URL: {scraped_data['details']}",
+                          "data": article_data
+                          })
     
     return JSONResponse({"success": True,
-                         "message":"Article uploading...",
+                         "message": "Article uploaded successfully",
                           "data": article_data
                           })
 
