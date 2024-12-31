@@ -56,6 +56,7 @@ async def post_data(request : QueryData, page: int = 1, limit: int = 8, members_
 
 @app.post("/upload/url")
 async def upload_url(request: QueryData):
+    global scraped, lexicon
     url = request.query
     article_data = sp.scrape_medium_article(url)
     
@@ -68,6 +69,10 @@ async def upload_url(request: QueryData):
                           })
     
     idxr.index_csv_dataset(article_data, lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True, False)
+    print("Reloading scraped...")
+    scraped = load_scraped(fp.scraped_file + '.csv')
+    print("Reloading lexicon...")
+    lexicon = load_lexicon(fp.lexicon_file)
     
     return JSONResponse({"success": True,
                          "message": "Article uploaded successfully",
@@ -76,6 +81,7 @@ async def upload_url(request: QueryData):
 
 @app.post("/upload")
 async def upload_article( request: ArticleData):
+    global scraped, lexicon
     article_data = request.article
     scraped_data = idxr.index_csv_dataset(article_data, lexicon, fp.ids_file, fp.forward_index_folder, fp.indexed_urls_file, fp.processed_docs_file, True, True)
     if scraped_data:
@@ -83,6 +89,11 @@ async def upload_article( request: ArticleData):
                          "message": f"Error scraping URL: {scraped_data['details']}",
                           "data": article_data
                           })
+    
+    print("Reloading scraped...")
+    scraped = load_scraped(fp.scraped_file + '.csv')
+    print("Reloading lexicon...")
+    lexicon = load_lexicon(fp.lexicon_file)
     
     return JSONResponse({"success": True,
                          "message": "Article uploaded successfully",

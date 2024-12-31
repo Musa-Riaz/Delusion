@@ -69,7 +69,7 @@ def find_relevant_desc(text, query, n):
     for sentence in sentences[index:]:
         for word in sentence.split():
             if word.lower() in query:
-                result += '<b>' + word + r'<\b>'    # highlight this word
+                result += '<b>' + word + '</b>'    # highlight this word
             else:
                 result += word
             result += ' '
