@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Star } from "lucide-react";
-
+import { FaStar } from "react-icons/fa";
 
 const ResultCards = ({
   title,
@@ -24,15 +24,15 @@ const ResultCards = ({
   return (
     <div className="flex p-4">
       <Card className="w-[380px] flex flex-col overflow-hidden border rounded-lg shadow-lg transition-transform transform hover:scale-105 duration-200 ease-in-out">
-        <CardHeader className="p-4 h-24 flex ">
+        <CardHeader className="p-4 h-26 flex ">
         {/* <div className=" flex justify-end">{members_only && <Star color="yellow"/>}</div> */}
-          <CardTitle className="text-lg line-clamp-2 overflow-hidden text-ellipsis font-bold ">{title}</CardTitle>
+          <CardTitle className="text-lg line-clamp-2 text-ellipsis font-bold ">{title}</CardTitle>
           {members_only && (
             <div
               className="flex justify-end"
               title="Members Only"
             >
-              <Star color="yellow"  />
+              <FaStar className="text-yellow-400"/>
             </div>
           )}
         </CardHeader>

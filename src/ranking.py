@@ -1,5 +1,3 @@
-from sortedcontainers import SortedList
-
 # given the documents of 1 word, ranks them based on word hits
 def rank_docs(docs, intersections):
     # any hits other than TEXT are referred to as special hits
@@ -13,7 +11,7 @@ def rank_docs(docs, intersections):
     # this decision was made as many articles contain tags such as 'Apple', 'Apple Watch', 'Apple Seminar' and so on
     # not necessarily adding to the relevancy of the document
     added = [False for i in range(6)]
-    top_docs = SortedList()     # stores the top documents in a sorted manner efficiently using a binary tree
+    top_docs = []
 
     for doc in docs:
         doc_id = doc[0]
@@ -64,9 +62,7 @@ def rank_docs(docs, intersections):
 
         this_score *= multiplier
 
-        # SortedList() stores in ascending order by default
-        # storing negative scores to simulate descending order
-        top_docs.add((-1 * this_score, doc_id))
+        top_docs.append((this_score, doc_id))
 
     return top_docs
 
