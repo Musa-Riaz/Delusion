@@ -3,7 +3,7 @@ import file_handling as fh
 import file_paths as fp
 import threading as th
 import ranking as rk
-import struct
+import torch as pt
 import json
 import ast
 import re
@@ -68,7 +68,7 @@ def find_relevant_desc(text, query, n):
     result = ''
     for sentence in sentences[index:]:
         for word in sentence.split():
-            if word.lower() in query:
+            if re.sub(r'[.,!?;:%&"\']', '', word.lower()) in query:
                 result += '<b>' + word + '</b>'    # highlight this word
             else:
                 result += word
@@ -122,12 +122,12 @@ def get_results(query, lexicon, scraped, start, end, members_only):
                     result_docs.append(doc)
                 result_docs_set.add(doc[1])
     
-    result_docs = list(result_docs)
+    # extract top required documents using pytorch
+    result_docs_tensor = pt.tensor([doc[0] for doc in result_docs])
+    top_scores, top_indices = pt.topk(result_docs_tensor, end)
     results = []
     threads = []
-    for i in range(start, end):
-        if i >= len(result_docs):
-            break
+    for i in top_indices[start:]:
         this_thread = th.Thread(target=get_doc_info, args=(result_docs[i][1], results, query, scraped))
         threads.append(this_thread)
         this_thread.start()

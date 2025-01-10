@@ -9,6 +9,7 @@ import { Frown } from "lucide-react";
 import { FaStar } from "react-icons/fa";
 import { CiStar } from "react-icons/ci";
 import { MoonLoader } from "react-spinners";
+import { useEffect } from "react";
 import { useLocation } from "react-router";
 import {
   Pagination,
@@ -224,6 +225,11 @@ const ResultsPage = () => {
     }
   };
 
+  useEffect(() => {
+    handleSearch(1);
+  }, [addMembersOnly]);
+  
+
   return (
     <div className="bg-[#ffecd4] min-h-screen">
       <div className="p-2 flex gap-2 flex-col items-start  ">
@@ -322,7 +328,8 @@ const ResultsPage = () => {
               <input
                 type="checkbox"
                 checked={addMembersOnly}
-                onChange={() => setAddMembersOnly(!addMembersOnly)}
+                onChange={() => {setAddMembersOnly(!addMembersOnly)
+                }}
                 className="hidden peer"
               />
               <div className="w-16 h-12 p-2 rounded-xs flex justify-center items-center :bg-[#ffecd4] peer-checked:bg-[#ffecd4]">
@@ -353,7 +360,7 @@ const ResultsPage = () => {
             ))}
           </div>
         )}
-        <h1 className="text-5xl font-myFont1">
+        <h1 className="text-5xl font-myFont1 mt-10">
           The Top Search <span className="font-extrabold">Results</span> Are...
         </h1>
       </div>
