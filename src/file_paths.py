@@ -6,6 +6,6 @@ frequencies_file = 'indexes/frequencies.bin'    # stores the frequency of each w
 processed_docs_file = 'indexes/processed'       # used for retrieving document data given doc id
 lexicon_file = 'indexes/lexicon.csv'
 ids_file = 'indexes/next_ids.txt'
-dataset_file = '30_articles.csv'
+dataset_file = '1000_articles.csv'
 scraped_file = 'indexes/scraped'
 texts_file = 'indexes/texts'

@@ -152,6 +152,11 @@ def index_csv_dataset(dataset, lexicon, ids_file, forward_index_folder, indexed_
             next(dataset)    # skip headings row
         
         for article in dataset:
+            if not is_new_doc:
+                # Add a default entry for every article if it's a bulk index
+                fh.append_offset(fp.scraped_file)
+                fh.write_to_csv(fp.scraped_file + '.csv', [[next_doc_id, 'No thumbnail available', 'No']], 'a')
+                
             index_article(article, indexed_urls, lexicon, lexicon_entries, forward_index_entries, new_urls, processed_docs)
             
             # write the current batch to the files and clear the entries to save memory

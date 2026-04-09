@@ -122,12 +122,18 @@ def get_results(query, lexicon, scraped, start, end, members_only):
                     result_docs.append(doc)
                 result_docs_set.add(doc[1])
     
+    if not result_docs:
+        return [], 0
+    
     # extract top required documents using pytorch
+    # Ensure k is not larger than the number of results to avoid RuntimeError
+    k = min(len(result_docs), end)
     result_docs_tensor = pt.tensor([doc[0] for doc in result_docs])
-    top_scores, top_indices = pt.topk(result_docs_tensor, end)
+    top_scores, top_indices = pt.topk(result_docs_tensor, k)
     results = []
     threads = []
-    for i in top_indices[start:]:
+    # Only iterate through indices within the requested range
+    for i in top_indices[start:min(len(top_indices), end)]:
         this_thread = th.Thread(target=get_doc_info, args=(result_docs[i][1], results, query, scraped))
         threads.append(this_thread)
         this_thread.start()
